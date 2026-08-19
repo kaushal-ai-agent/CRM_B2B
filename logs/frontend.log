@@ -1,0 +1,87 @@
+{"timestamp": "2026-08-15T16:17:05.265Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:19:35.820Z", "level": "info", "message": "Application started", "path": "/", "payload": {"path": "/"}}
+{"timestamp": "2026-08-15T16:19:35.939Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:19:35.940Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:19:35.949Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:19:35.951Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:19:37.020Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:19:37.286Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:19:37.286Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:19:39.257Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:19:41.162Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:19:41.165Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:19:41.168Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:19:41.732Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:19:41.733Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:19:43.491Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T00:00:00Z", "level": "info", "message": "diagnostic endpoint test", "path": "/", "payload": {"source": "validation"}}
+{"timestamp": "2026-08-15T16:19:46.683Z", "level": "info", "message": "Application started", "path": "/", "payload": {"path": "/"}}
+{"timestamp": "2026-08-15T16:19:47.170Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:19:47.171Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:19:47.207Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:19:47.207Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:19:47.386Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:19:47.387Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:19:47.387Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:19:49.380Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:22:46.766Z", "level": "info", "message": "Debounced value applied", "path": "/", "payload": {"delay": 280, "valueLength": 0}}
+{"timestamp": "2026-08-15T16:24:22.029Z", "level": "info", "message": "Customer360 opened", "path": "/", "payload": {"customerId": "7ef9145d-263a-4a30-8fcc-bf33769fcada"}}
+{"timestamp": "2026-08-15T16:24:22.047Z", "level": "info", "message": "UI click", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"action": "Open Customer360", "element": "button"}}
+{"timestamp": "2026-08-15T16:24:22.150Z", "level": "info", "message": "fetchCustomer360 request", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"id": "7ef9145d-263a-4a30-8fcc-bf33769fcada"}}
+{"timestamp": "2026-08-15T16:24:22.156Z", "level": "info", "message": "fetchCustomer360 request", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"id": "7ef9145d-263a-4a30-8fcc-bf33769fcada"}}
+{"timestamp": "2026-08-15T16:24:22.419Z", "level": "info", "message": "fetchCustomer360 response", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"id": "7ef9145d-263a-4a30-8fcc-bf33769fcada", "receivedCustomer": true}}
+{"timestamp": "2026-08-15T16:24:22.419Z", "level": "info", "message": "Customer360 state updated", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"id": "7ef9145d-263a-4a30-8fcc-bf33769fcada", "hasCustomer": true}}
+{"timestamp": "2026-08-15T16:24:22.477Z", "level": "info", "message": "fetchCustomer360 response", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"id": "7ef9145d-263a-4a30-8fcc-bf33769fcada", "receivedCustomer": true}}
+{"timestamp": "2026-08-15T16:24:22.477Z", "level": "info", "message": "Customer360 state updated", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"id": "7ef9145d-263a-4a30-8fcc-bf33769fcada", "hasCustomer": true}}
+{"timestamp": "2026-08-15T16:24:51.998Z", "level": "info", "message": "UI click", "path": "/customer/7ef9145d-263a-4a30-8fcc-bf33769fcada", "payload": {"action": "Return to customer directory", "element": "button"}}
+{"timestamp": "2026-08-15T16:24:52.041Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:24:52.041Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:24:52.047Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:24:52.047Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:24:52.082Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:24:52.107Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:24:52.107Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:24:52.591Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:24:52.629Z", "level": "info", "message": "Debounced value applied", "path": "/", "payload": {"delay": 280, "valueLength": 0}}
+{"timestamp": "2026-08-15T16:33:36.287Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:33:36.288Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:33:36.296Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:33:36.852Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:33:36.852Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:33:37.842Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:33:38.091Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:33:38.095Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:33:38.106Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:33:38.727Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:33:38.727Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:33:39.784Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:36:38.389Z", "level": "info", "message": "Application started", "path": "/", "payload": {"path": "/"}}
+{"timestamp": "2026-08-15T16:36:38.472Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:36:38.472Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:36:38.481Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:36:38.481Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:36:38.565Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:36:38.571Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:36:38.571Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:36:39.098Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:36:39.125Z", "level": "info", "message": "Debounced value applied", "path": "/", "payload": {"delay": 280, "valueLength": 0}}
+{"timestamp": "2026-08-15T16:49:05.504Z", "level": "info", "message": "Application started", "path": "/", "payload": {"path": "/"}}
+{"timestamp": "2026-08-15T16:49:05.659Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:49:05.660Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:49:05.671Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:49:05.673Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:49:05.865Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:49:05.898Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:49:05.899Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:49:06.989Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-15T16:49:07.004Z", "level": "info", "message": "Debounced value applied", "path": "/", "payload": {"delay": 280, "valueLength": 0}}
+{"timestamp": "2026-08-15T16:56:55.692Z", "level": "info", "message": "Application started", "path": "/", "payload": {"path": "/"}}
+{"timestamp": "2026-08-15T16:56:55.760Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:56:55.761Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:56:55.767Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage request", "path": "/", "payload": {"params": {}}}
+{"timestamp": "2026-08-15T16:56:55.770Z", "level": "info", "message": "fetchCustomers request", "path": "/", "payload": {"url": "http://127.0.0.1:8000/api/v1/customers/", "params": {}}}
+{"timestamp": "2026-08-15T16:56:56.006Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:56:56.049Z", "level": "info", "message": "Debounced value applied", "path": "/", "payload": {"delay": 280, "valueLength": 0}}
+{"timestamp": "2026-08-15T16:56:56.058Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
+{"timestamp": "2026-08-15T16:56:56.058Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
+{"timestamp": "2026-08-15T16:56:56.712Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}

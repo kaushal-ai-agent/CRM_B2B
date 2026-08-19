@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply min-h-screen text-slate-800 antialiased;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: #f8fafc;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  ::selection {
+    background: rgba(37, 99, 235, 0.2);
+    color: #0f172a;
+  }
+}
