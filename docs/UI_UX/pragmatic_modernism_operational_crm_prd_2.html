@@ -1,0 +1,228 @@
+# Pragmatic Modernism (Operational CRM)
+
+## Product Overview
+
+**The Pitch:** SalesOS is a high-density, low-latency customer intelligence engine designed for rapid B2B sales operations. It collapses the distance between financial data (Tally) and relationship management (WhatsApp) into a single, keyboard-navigable surface.
+
+**For:** B2B sales executives and operations managers who need zero-friction access to customer financials, order histories, and pipeline status to drive daily revenue.
+
+**Device:** desktop
+
+**Design Direction:** A hyper-functional, structured interface prioritizing data density and rapid scanning. Characterized by stark wireframe-like borders, monochromatic foundational palettes, and precise monospace financial data styling.
+
+**Inspired by:** Linear, Bloomberg Terminal, Retool
+
+---
+
+## Screens
+
+- **Customer 360 Directory:** High-density datagrid tracking customer tiers, outstanding receivables (₹), and dormancy flags.
+- **Customer Profile Drawer:** 800px deep-dive slide-over detailing order histories, WhatsApp logs, and product affinities.
+- **Lead & Order Pipeline:** Rigid kanban board mapping the operational lifecycle from ingestion to accounting sync.
+- **Executive Dashboard:** Live telemetry surface tracking MTD revenue, receivables aging, and Tally sync health.
+
+---
+
+## Key Flows
+
+**Deal Escalation Review:** Manager handles pipeline blockages.
+
+1. User is on Executive Dashboard -> sees red indicator on `Threshold Escalation` pipeline metric
+2. User clicks indicator -> routes to Lead & Order Pipeline filtered by `Status: Escalated`
+3. User opens Lead Card -> approves custom pricing override, moving deal to `Payment` stage
+
+**Customer Intelligence Deep-Dive:** Rep preps for client call.
+
+1. User is on Customer 360 Directory -> spots `Dormant` flag next to Tier A client
+2. User presses `Space` or clicks row -> opens Customer Profile Drawer
+3. Rep reviews WhatsApp AI summary and recommends high-affinity SKUs
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#0F172A` - Primary buttons, active states, key icons
+- **Background:** `#F3F4F6` - App canvas, neutral space
+- **Surface:** `#FFFFFF` - Tables, cards, drawer backgrounds
+- **Text:** `#111827` - Main typography, data values
+- **Muted:** `#9CA3AF` - Borders, disabled states, timestamps
+- **Accent:** `#2563EB` - Interactive links, active tab indicators
+- **Positive:** `#059669` - Tier A badges, Tally Sync Active
+- **Warning:** `#D97706` - Tier B, Aging > 60 days
+- **Critical:** `#DC2626` - Dormant flags, Escalate status
+
+## Typography
+
+Choose fonts that are **distinctive and characterful**, not generic defaults.
+
+- **Headings:** IBM Plex Sans, 600, 20-24px, `-0.02em` tracking
+- **Body:** IBM Plex Sans, 400, 13px, `1.4` line-height
+- **Data/Financials:** IBM Plex Mono, 500, 12px, tabular nums
+- **Small text:** IBM Plex Sans, 500, 11px, uppercase tracking `0.05em`
+- **Buttons:** IBM Plex Sans, 600, 13px
+
+**Style notes:** Minimal border radius (`2px`), zero drop-shadows (rely on 1px borders for depth), alternating zebra stripes on dense tables (`#FAFAFA`), uppercase micro-copy for metadata.
+
+## Design Tokens
+
+```css
+:root {
+  --color-primary: #0F172A;
+  --color-background: #F3F4F6;
+  --color-surface: #FFFFFF;
+  --color-text: #111827;
+  --color-muted: #9CA3AF;
+  --color-border: #E5E7EB;
+  --font-primary: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --radius: 2px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### Customer 360 Directory
+
+**Purpose:** Master list for rapid filtering and sorting of the entire customer base.
+
+**Layout:** Full-width layout. 48px sticky header with search/filters, followed by a flush-to-edge data table.
+
+**Key Elements:**
+- **Command Bar:** 32px height, `/` shortcut focus, placeholder `Search by Name, GSTIN, or Phone...`
+- **Tier Badges:** 20px height, 4px padding, solid background (A: Green, B: Orange, C: Gray), Mono font.
+- **Financial Columns:** Outstanding ₹, Last Order Date, strictly right-aligned, IBM Plex Mono.
+
+**States:**
+- **Empty:** "No customers match filter criteria" center-aligned text.
+- **Loading:** Skeleton rows with animating linear gradient.
+- **Error:** Red top-banner "Tally Sync Failed: Displaying cached data".
+
+**Components:**
+- **Dormancy Flag:** `14px` icon, `#DC2626`, tooltip on hover indicating days since last order.
+- **Export Button:** `32px` height, outline style (`border: 1px solid #E5E7EB`), text `Export CSV`.
+
+**Interactions:**
+- **Click Row:** Opens Customer Profile Drawer (slide-in right).
+- **Hover Row:** Row background shifts to `#F9FAFB`, cursor pointer.
+
+**Responsive:**
+- **Desktop:** Full 12-column grid.
+- **Tablet:** Hide Last Order Date, compress spacing.
+- **Mobile:** Unsupported (Redirect to desktop).
+
+### Customer Profile Drawer
+
+**Purpose:** Context-rich sidebar for deep-dive investigation without losing directory context.
+
+**Layout:** 800px fixed-width right-side overlay. 100vh. 64px header, scrollable content separated into 3 vertical panels (Overview, Comm Stream, Affinities).
+
+**Key Elements:**
+- **Backdrop:** `#000000` at `20%` opacity, blur `2px`.
+- **Tally Order History:** Condensed mini-table, 24px row height, mono font for ₹ amounts.
+- **WhatsApp AI Stream:** Chronological feed. Blue left-border for AI summaries, gray border for raw logs.
+
+**States:**
+- **Empty:** N/A (Requires selected customer).
+- **Loading:** Shimmer effect on 3 vertical panel blocks.
+- **Error:** "Failed to load WhatsApp history." with retry link.
+
+**Components:**
+- **Product Affinity Tags:** `24px` height, `#F3F4F6` background, 11px uppercase text, ordered by volume.
+- **Quick Action Row:** `Create Quote`, `Log Call`, `Escalate` buttons anchored at top right.
+
+**Interactions:**
+- **Click Backdrop:** Closes drawer.
+- **Hover Affinity Tag:** Tooltip shows lifetime volume sold.
+
+**Responsive:**
+- **Desktop:** 800px drawer.
+- **Tablet:** 100% width drawer.
+- **Mobile:** Unsupported.
+
+### Lead & Order Pipeline
+
+**Purpose:** Operational kanban board for moving deals to accounting closure.
+
+**Layout:** Horizontal scrolling canvas. 5 fixed-width columns (320px each), 16px gaps.
+
+**Key Elements:**
+- **Stage Columns:** `New Ingestion`, `AI Quoted`, `Threshold Escalation`, `Payment`, `Tally Sync`. Gray background (`#F9FAFB`).
+- **Deal Cards:** White surface, 1px border (`#E5E7EB`), customer name, deal value (Mono), days in stage indicator.
+- **Escalation Warning:** Red 2px left-border on cards in `Threshold Escalation` stage.
+
+**States:**
+- **Empty:** "No active deals in pipeline."
+- **Loading:** Spinner in top right header.
+- **Error:** Inline retry button per column if fetch fails.
+
+**Components:**
+- **Column Header:** Stage name (13px, 600 weight), deal count badge, total ₹ value in stage (right aligned).
+- **Tally Sync Status Badge:** `16px` dot (Green = Synced, Red = Error) on card footer.
+
+**Interactions:**
+- **Drag & Drop:** Move cards between stages. Cursor `grabbing`.
+- **Hover Card:** Slight shadow (`box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1)`), reveal quick-action menu icon (3 dots).
+
+**Responsive:**
+- **Desktop:** Horizontal scroll if > 4 columns.
+- **Tablet:** Single column view with stage selector dropdown.
+- **Mobile:** Unsupported.
+
+### Live Executive Dashboard
+
+**Purpose:** High-level telemetry for managers to monitor business health and bottlenecks.
+
+**Layout:** Rigid CSS grid. Top row: 4 KPI widgets. Middle row: MTD Chart (spanning 8 cols) + Tally Sync Panel (spanning 4 cols). Bottom row: Aging Table + SKU metrics.
+
+**Key Elements:**
+- **Tally Sync Badge:** Prominent top-right header indicator. `<Pulse>` animation if syncing, solid green if synced within 5 mins.
+- **Receivables Aging Table:** 5 buckets (`Current`, `1-30`, `31-60`, `61-90`, `90+`), strict tabular layout.
+- **SKU Velocity List:** Split list (Top 5 Fast Movers, Top 5 Slow Movers), inline micro-sparklines.
+
+**States:**
+- **Empty:** N/A (Always shows base metrics).
+- **Loading:** Ghost blocks matching grid dimensions.
+- **Error:** "Metrics unavailable" fallback inside individual widgets to prevent full-page crash.
+
+**Components:**
+- **KPI Widget:** `120px` height, 1px border. Label (11px uppercase), Value (28px Mono), Delta (+5% green, -2% red).
+- **MTD vs SMLY Chart:** Dual-line chart (Current Month = Solid Blue `#2563EB`, Same Month Last Year = Dashed Gray `#9CA3AF`).
+
+**Interactions:**
+- **Hover Chart:** Vertical crosshair reveals exact ₹ value for both lines on that day.
+- **Click Aging Bucket:** Routes to Customer Directory pre-filtered by selected aging bucket.
+
+**Responsive:**
+- **Desktop:** 12-column grid.
+- **Tablet:** 2-column grid.
+- **Mobile:** Unsupported.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML + Tailwind CSS v3
+
+**Build Order:**
+1. **Design System & Layout Shell:** Establish IBM Plex fonts, 1px borders, and sidebar navigation.
+2. **Customer 360 Directory:** Builds the core table component, typography hierarchy, and status badges.
+3. **Customer Profile Drawer:** Implements the overlay logic, dense nested tables, and flexbox utility layouts.
+4. **Lead & Order Pipeline:** Establishes drag-and-drop state, column layouts, and complex card structures.
+5. **Live Executive Dashboard:** Finalizes charting, CSS grid mastery, and KPI widget composition.
+
+</details>

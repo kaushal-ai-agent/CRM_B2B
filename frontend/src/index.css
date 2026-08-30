@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -20,9 +20,9 @@
   }
 
   body {
-    @apply min-h-screen text-slate-800 antialiased;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    background: #f8fafc;
+    @apply min-h-screen text-[#0F172A] antialiased;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #F8FAFC;
   }
 
   #root {
@@ -34,10 +34,17 @@
   select,
   textarea {
     font: inherit;
+    border-radius: 0 !important;
+  }
+
+  /* Enforce 0px border radius and no box-shadow globally for components if needed */
+  * {
+    border-radius: 0px !important;
+    box-shadow: none !important;
   }
 
   ::selection {
     background: rgba(37, 99, 235, 0.2);
-    color: #0f172a;
+    color: #0F172A;
   }
 }

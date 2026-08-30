@@ -1,0 +1,215 @@
+# Pragmatic Modernism (Operational CRM)
+
+## Product Overview
+
+**The Pitch:** A high-density B2B customer intelligence and order pipeline system with native Tally integration. It transforms scattered Tally ERP data, lead streams, and order histories into a rapid-execution, keyboard-first interface for revenue operations.
+
+**For:** B2B Sales Executives, Accounts Receivable Teams, and Operations Managers who need instant access to ledger data, order pipelines, and outstanding payments without navigating clunky ERPs.
+
+**Device:** desktop
+
+**Design Direction:** High-density, utilitarian interface prioritizing data visibility, rigid grid structures, and keyboard navigation. Stark contrast, mono-spaced data columns, and 1px borders create a focused, no-nonsense environment.
+
+**Inspired by:** Bloomberg Terminal, Linear, Retool
+
+---
+
+## Screens
+
+- **Customer 360 Master Directory:** High-density, filterable tabular view of all accounts, GSTINs, and outstandings.
+- **Customer Profile Drawer:** Slide-out panel detailing order history, AI-parsed WhatsApp communications, and Tally ledger data.
+- **Lead & Order Pipeline:** Kanban and list-hybrid view tracking leads from ingestion to Tally sync.
+- **Live Executive Dashboard:** Grid of dense metrics covering revenue (MTD vs SMLY), aging receivables, and Tally sync health.
+
+---
+
+## Key Flows
+
+**Resolving Overdue Accounts:** A/R specialist identifies and action aging receivables.
+
+1. User is on **Live Executive Dashboard** -> sees `Receivables Aging 90+` metric blinking `14 Accounts`
+2. User clicks `14 Accounts` -> navigates to **Customer 360 Master Directory** auto-filtered for `Days Overdue > 90`
+3. User clicks `Acme Corp` row -> opens **Customer Profile Drawer** showing invoice history and one-click WhatsApp payment reminder.
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#0F62FE` - Buttons, active tabs, focus rings, primary links
+- **Background:** `#F4F4F4` - Application background, deep canvas
+- **Surface:** `#FFFFFF` - Tables, cards, drawers, input fields
+- **Text:** `#161616` - Primary body text, headings, data points
+- **Muted:** `#525252` - Secondary text, column headers, placeholders
+- **Border:** `#E0E0E0` - Cell dividers, panel borders
+- **Accent Success:** `#198038` - Tally sync success, paid status
+- **Accent Danger:** `#DA1E28` - Overdue accounts, sync errors
+- **Accent Warning:** `#F1C21B` - Pending actions, dormancy alerts
+
+## Typography
+
+- **Headings:** IBM Plex Sans, 600, 20-24px
+- **Body:** IBM Plex Sans, 400, 14px
+- **Data/Numbers:** IBM Plex Mono, 400, 13px (Strictly used for currency, dates, IDs, GSTINs)
+- **Small text:** IBM Plex Sans, 400, 12px
+- **Buttons:** IBM Plex Sans, 500, 13px
+
+**Style notes:** Utilitarian aesthetic. 0px border radius on all containers. 1px solid borders (`#E0E0E0`). No drop shadows, only rigid panel layering. High data density (24px row heights in tables).
+
+## Design Tokens
+
+```css
+:root {
+  --color-primary: #0F62FE;
+  --color-background: #F4F4F4;
+  --color-surface: #FFFFFF;
+  --color-text: #161616;
+  --color-muted: #525252;
+  --color-border: #E0E0E0;
+  --color-success: #198038;
+  --color-danger: #DA1E28;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --radius-none: 0px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### Customer 360 Master Directory
+
+**Purpose:** High-volume account browsing, filtering, and outstanding analysis.
+
+**Layout:** Full-viewport data table. Top bar for global search and bulk actions. Left sidebar for static navigation.
+
+**Key Elements:**
+- **Command Bar:** 40px height, `#FFFFFF` background, bottom border. Houses `/` shortcut global search.
+- **Data Grid:** 24px row height, alternating row colors (`#FFFFFF` / `#FCFCFC`). Columns: Account Name, GSTIN, Tier (A/B/C), Outstanding (₹), Last Order, Status.
+- **Export Utility:** 32px button, `#161616` border, "Export to Excel" text. Downloads `.csv` of current view.
+
+**States:**
+- **Empty:** "No accounts match filters" centered, 14px IBM Plex Mono, `#525252`.
+- **Loading:** Skeleton rows with sweep animation.
+- **Error:** Red banner (`#DA1E28` background, `#FFFFFF` text) below command bar.
+
+**Components:**
+- **Tier Badge:** 16px height, 4px horizontal padding. A = `#0F62FE`, B = `#525252`, C = `#E0E0E0` backgrounds. White text.
+- **Currency Cell:** Right-aligned, IBM Plex Mono, `#161616`. Red (`#DA1E28`) if overdue.
+
+**Interactions:**
+- **Click Row:** Triggers Customer Profile Drawer slide-in from right.
+- **Hover Row:** Row background changes to `#F4F4F4`.
+
+**Responsive:**
+- **Desktop:** Full columns visible.
+- **Tablet/Mobile:** Not supported. Desktop only.
+
+### Customer Profile Drawer
+
+**Purpose:** Deep dive into a single account's operational and financial health without losing context.
+
+**Layout:** 600px wide right-side overlay. 100% height. Scrim background (`#161616` at 40% opacity).
+
+**Key Elements:**
+- **Header:** Account Name (24px, Plex Sans), Status Tag, Close (`Esc`) button.
+- **Financial Summary:** 3-column grid (Outstanding, Tally Receivables, Credit Limit). Plex Mono 18px data points.
+- **Activity Stream:** Chronological feed combining Order History and AI WhatsApp Stream.
+- **Product Affinity:** Horizontal bar chart of top ordered SKUs.
+
+**States:**
+- **Loading:** Spinning `#0F62FE` loader in center.
+- **Empty Stream:** "No recent activity" in `#525252`.
+
+**Components:**
+- **WhatsApp Event Block:** 8px padding, `#E8F2FF` background, blue left-border (`#0F62FE`). AI summary text (13px).
+- **Tally Sync Status:** Dot indicator (`#198038` for synced, `#F1C21B` for pending).
+
+**Interactions:**
+- **Click 'Remind':** Opens pre-filled WhatsApp API prompt.
+- **Press 'Esc':** Closes drawer, returns focus to table.
+
+**Responsive:**
+- **Desktop:** 600px fixed width drawer.
+- **Tablet/Mobile:** Not supported.
+
+### Lead & Order Pipeline
+
+**Purpose:** Track order progression from lead capture to final Tally sync.
+
+**Layout:** Horizontal swimlanes (Kanban style). Rigid column dividers. Dense card layout.
+
+**Key Elements:**
+- **Stages:** New, AI Engaged, Escalation, Payment, Tally Sync.
+- **Pipeline Card:** 120px height, white background, 1px border. Shows Company, Amount, Time in Stage.
+- **Stage Header:** Count of items and total ₹ value per column.
+
+**States:**
+- **Empty Column:** Greyed out dashed border drop zone.
+- **Dragging:** Card opacity 80%, blue drop indicator line.
+
+**Components:**
+- **Escalation Tag:** `#DA1E28` border, red text, 12px Mono.
+- **Age Counter:** `3d 12h` format, Plex Mono. Turns red if > 48h in stage.
+
+**Interactions:**
+- **Drag & Drop:** Move cards between columns. Updates status via API.
+- **Click Card:** Opens mini-drawer with order line items.
+
+**Responsive:**
+- **Desktop:** Horizontal scroll if columns exceed viewport.
+- **Tablet/Mobile:** Not supported.
+
+### Live Executive Dashboard
+
+**Purpose:** High-level operational oversight for management.
+
+**Layout:** CSS Grid. Top row: Key scorecards. Middle row: Aging tables and Charts. Bottom row: System health.
+
+**Key Elements:**
+- **Scorecards:** MTD Revenue (₹), SMLY comparison (%), Total Receivables.
+- **Aging Receivables Table:** Grouped by 30/60/90+ days. Top 5 accounts per bucket.
+- **SKU Velocity:** 2-column list of Fast-moving vs Slow-moving SKUs.
+- **Tally Sync Health:** Real-time log of background sync jobs.
+
+**States:**
+- **Data Refreshing:** 2px blue progress bar at top of dashboard.
+
+**Components:**
+- **Metric Delta:** `↑ 12%` in `#198038` (green) or `↓ 4%` in `#DA1E28` (red). Plex Mono.
+- **Log Line:** 12px Mono, timestamp `[14:32:01]`, Status `SYNC_OK`.
+
+**Interactions:**
+- **Click Metric:** Navigates to Master Directory with applied filters.
+- **Hover Bar Chart:** Tooltip with exact ₹ amounts.
+
+**Responsive:**
+- **Desktop:** 4-column grid, snapping to 2-column on smaller monitors.
+- **Tablet/Mobile:** Not supported.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML + Tailwind CSS v3 (Arbitrary values heavily used for rigid px layouts)
+
+**Build Order:**
+1. **Customer 360 Master Directory:** Establishes the dense table component, typography scale (Sans vs Mono), and global shell (sidebar/header).
+2. **Customer Profile Drawer:** Builds the overlay mechanics, detailed layout grids, and activity stream components.
+3. **Live Executive Dashboard:** Implements the grid layout, scorecard components, and chart placeholders using the established design tokens.
+4. **Lead & Order Pipeline:** Adds drag-and-drop mechanics and specialized card UI.
+
+</details>

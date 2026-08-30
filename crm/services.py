@@ -1,7 +1,8 @@
 from pathlib import Path
 import pandas as pd
 from django.db import transaction
-from crm.models import Customer, Product, Order, OrderItem, Invoice, Interaction
+from crm.models import Customer, Product, Order, OrderItem, Invoice, Interaction, SystemConfiguration
+import json
 
 class ExcelIngestionService:
     def __init__(self, data_folder: Path):
@@ -16,6 +17,21 @@ class ExcelIngestionService:
             self.import_order_items()
             self.import_invoices()
             self.import_interactions()
+            self.import_system_configurations()
+
+    def import_system_configurations(self):
+        file_path = self.data_folder / "system_configurations.xlsx"
+        if not file_path.exists():
+            return
+        df = pd.read_excel(file_path)
+        
+        for _, row in df.iterrows():
+            SystemConfiguration.objects.update_or_create(
+                key=row["key"],
+                defaults={
+                    "value": json.loads(row["value"])
+                }
+            )
 
     def import_customers(self):
         file_path = self.data_folder / "customers.xlsx"
@@ -43,9 +59,7 @@ class ExcelIngestionService:
                     "industry_segment": row["industry_segment"],
                     "city": row["city"],
                     "state": row["state"],
-                    "lead_source": row["lead_source"],
-                    "customer_tier": row["customer_tier"],
-                    "is_dormant": row["is_dormant"],
+                    "lead_source": row["lead_source"]
                 }
             )
 

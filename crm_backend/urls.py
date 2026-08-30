@@ -1,30 +1,9 @@
-"""
-URL configuration for crm_backend project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-# from django.contrib import admin
-# from django.urls import path
-
-# urlpatterns = [
-#     path('admin/', admin.site.urls),
-# ]
-
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from crm.views import CustomerViewSet, write_frontend_logs
+from crm.views import CustomerViewSet, write_frontend_logs, dashboard_analytics_v2
+from crm.analytics_views import dashboard_kpis, dashboard_aging, dashboard_products, analytics_geo, analytics_pareto
+from crm.config_views import system_config_view
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
@@ -34,5 +13,19 @@ router.register(r'api/v1/customers', CustomerViewSet, basename='customer')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/debug/frontend-logs/', write_frontend_logs, name='frontend-logs'),
+    
+    # Unified Dashboard Analytics
+    path('api/v1/analytics/dashboard/', dashboard_analytics_v2),
+    
+    # Legacy Analytics & Dashboard (keep for now if needed)
+    path('api/v1/dashboard/kpis/', dashboard_kpis),
+    path('api/v1/dashboard/aging/', dashboard_aging),
+    path('api/v1/dashboard/products/', dashboard_products),
+    path('api/v1/analytics/geo/', analytics_geo),
+    path('api/v1/analytics/pareto/', analytics_pareto),
+    
+    # Config
+    path('api/v1/config/', system_config_view),
+    
     path('', include(router.urls)),
 ]

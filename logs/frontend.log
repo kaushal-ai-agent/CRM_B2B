@@ -85,3 +85,18 @@
 {"timestamp": "2026-08-15T16:56:56.058Z", "level": "info", "message": "fetchCustomers response", "path": "/", "payload": {"count": 150, "resultCount": 150, "hasNext": false, "hasPrevious": false}}
 {"timestamp": "2026-08-15T16:56:56.058Z", "level": "info", "message": "useCustomerDirectory.loadFirstPage response", "path": "/", "payload": {"count": 150, "resultCount": 150, "query": {}}}
 {"timestamp": "2026-08-15T16:56:56.712Z", "level": "info", "message": "CustomerList render response", "path": "/", "payload": {"count": 150, "visibleCount": 150, "activeFilters": 0}}
+{"timestamp": "2026-08-25T12:04:11.855Z", "level": "info", "message": "Application started", "path": "/", "payload": {"path": "/"}}
+{"timestamp": "2026-08-25T12:04:15.725Z", "level": "info", "message": "UI click", "path": "/dashboard", "payload": {"action": "Continue as Admin (Owner)Full Access", "element": "button"}}
+{"timestamp": "2026-08-25T12:04:20.844Z", "level": "info", "message": "UI click", "path": "/customers", "payload": {"action": "Customers", "element": "a"}}
+{"timestamp": "2026-08-25T12:04:22.280Z", "level": "info", "message": "UI click", "path": "/orders", "payload": {"action": "Orders", "element": "a"}}
+{"timestamp": "2026-08-25T12:04:23.216Z", "level": "info", "message": "UI click", "path": "/customers", "payload": {"action": "Customers", "element": "a"}}
+{"timestamp": "2026-08-25T12:04:25.574Z", "level": "info", "message": "UI click", "path": "/login", "payload": {"action": "Logout", "element": "button"}}
+{"timestamp": "2026-08-25T12:04:27.345Z", "level": "info", "message": "UI click", "path": "/dashboard", "payload": {"action": "Continue as Sales RepSales Access", "element": "button"}}
+{"timestamp": "2026-08-25T12:04:30.020Z", "level": "info", "message": "UI click", "path": "/login", "payload": {"action": "Logout", "element": "button"}}
+{"timestamp": "2026-08-25T12:04:31.428Z", "level": "info", "message": "UI click", "path": "/dashboard", "payload": {"action": "Continue as Admin (Owner)Full Access", "element": "button"}}
+{"timestamp": "2026-08-25T12:04:33.498Z", "level": "info", "message": "UI click", "path": "/login", "payload": {"action": "Logout", "element": "button"}}
+{"timestamp": "2026-08-25T12:04:35.534Z", "level": "info", "message": "UI click", "path": "/dashboard", "payload": {"action": "Continue as Admin (Owner)Full Access", "element": "button"}}
+{"timestamp": "2026-08-25T12:06:00.477Z", "level": "info", "message": "UI click", "path": "/login", "payload": {"action": "Logout", "element": "button"}}
+{"timestamp": "2026-08-25T12:06:26.939Z", "level": "info", "message": "UI click", "path": "/dashboard", "payload": {"action": "Continue as Admin (Owner)Full Access", "element": "button"}}
+{"timestamp": "2026-08-25T12:06:53.387Z", "level": "info", "message": "UI click", "path": "/login", "payload": {"action": "Logout", "element": "button"}}
+{"timestamp": "2026-08-25T12:08:45.245Z", "level": "info", "message": "UI click", "path": "/dashboard", "payload": {"action": "Continue as Admin (Owner)Full Access", "element": "button"}}

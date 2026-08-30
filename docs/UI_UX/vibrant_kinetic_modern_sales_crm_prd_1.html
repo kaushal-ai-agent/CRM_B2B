@@ -1,0 +1,204 @@
+# Vibrant Kinetic (Modern Sales CRM)
+
+## Product Overview
+
+**The Pitch:** SalesOS is a high-velocity B2B CRM engine designed for ruthless pipeline efficiency and real-time financial synchronization. It strips away friction, surfacing critical revenue metrics, AI-accelerated quotes, and live Tally ERP reconciliation in a single panes-of-glass environment.
+
+**For:** Enterprise sales teams, revenue operations, and account managers who demand speed, precision, and zero-latency data access.
+
+**Device:** desktop
+
+**Design Direction:** Obsidian-dark, high-contrast, razor-sharp technical interface. Zero border-radius, hairline borders, and neon status indicators prioritize data density and momentum over decorative flair. 
+
+**Inspired by:** Bloomberg Terminal, Linear
+
+---
+
+## Screens
+
+- **Core Sales Dashboard:** Real-time revenue pulse, receivables aging, and live ERP sync logs.
+- **Order Processing Pipeline:** Velocity-optimized Kanban from raw enquiry to finalized Tally sync.
+- **Customer 360:** Comprehensive intelligence dossier, financial validation, and algorithmic purchasing affinity.
+- **Data Hub:** Centralized command center for bulk data operations, reconciliation, and ledger exports.
+
+---
+
+## Key Flows
+
+**Accelerated Order Resolution:** Fast-tracking a raw enquiry to a confirmed ERP ledger entry.
+
+1. User is on **Order Processing Pipeline** -> sees `New Enquiry` card with amber indicator.
+2. User clicks **AI Quote Generator** -> system drafts proposal, moves card to `AI Quoted`.
+3. Client accepts, user clicks **Confirm & Sync** -> card transitions to `Tally Synced`, emits green neon pulse, updates Dashboard live feed.
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#00E5FF` - Active states, primary buttons, text links
+- **Background:** `#050505` - Main application canvas (obsidian deep)
+- **Surface:** `#121212` - Cards, panels, sidebars
+- **Text:** `#FFFFFF` - Primary headings, active data points
+- **Muted:** `#71717A` - Secondary text, structural grid lines, deactivated states
+- **Accent/Neon Green:** `#00FF66` - Success, synced, positive momentum
+- **Accent/Neon Crimson:** `#FF0055` - Errors, escalations, critical aging
+- **Accent/Neon Amber:** `#FFB800` - Pending, AI processing, warnings
+
+## Typography
+
+Geometric precision meets technical data rendering.
+
+- **Headings:** Satoshi, 700, 24-32px
+- **Body:** Satoshi, 500, 14px
+- **Data/Numbers:** JetBrains Mono, 400, 13px (tabular-nums essential)
+- **Small text:** JetBrains Mono, 500, 11px, uppercase tracking
+- **Buttons:** Satoshi, 600, 13px, uppercase
+
+**Style notes:** `0px` border radius everywhere. `1px` solid `#27272A` borders on all surfaces. No drop shadows; depth is achieved entirely through background color contrast and neon 1px border highlights on active elements.
+
+## Design Tokens
+
+```css
+:root {
+  --color-primary: #00E5FF;
+  --color-bg: #050505;
+  --color-surface: #121212;
+  --color-text: #FFFFFF;
+  --color-muted: #71717A;
+  --color-neon-green: #00FF66;
+  --color-neon-crimson: #FF0055;
+  --color-neon-amber: #FFB800;
+  
+  --font-sans: 'Satoshi', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --border-radius: 0px;
+  --border-thin: 1px solid #27272A;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### Core Sales Dashboard
+
+**Purpose:** Executive-level mission control for revenue trajectory and financial health.
+
+**Layout:** 3-column grid. Top strip for macro metrics. Left/Center for visual aging buckets. Right sidebar for real-time Tally feed.
+
+**Key Elements:**
+- **Macro Revenue Ribbon:** 4 horizontal blocks. `MTD REVENUE`, `ARR RUN RATE`, `PIPELINE VALUE`, `CASH COLLECTED`. JetBrains Mono `32px` numbers, white on black.
+- **Aging Receivables Matrix:** Stacked bar chart for `30`, `60`, `90+` days. `90+` highlighted in `#FF0055`. 
+- **Live Tally Sync Feed:** Scrolling terminal-style log. `[14:32:01] SYNC SUCCESS: INV-9982 -> LEDGER_HQ`.
+
+**States:**
+- **Empty:** "NO DATA STREAM DETECTED. CHECK TALLY CONNECTION."
+- **Loading:** Blinking `_` cursor in mono font.
+- **Error:** Red `[ERR]` block with stark white text detailing API failure.
+
+**Components:**
+- **Metric Block:** 240x120px, `#121212` background, 1px `#27272A` border. Top-left label `#71717A`, bottom-left value `#FFFFFF`.
+- **Feed Entry:** Full width, 32px height. Monospace. Green `#00FF66` dot for success.
+
+**Interactions:**
+- **Hover Metric:** Border transitions to `#00E5FF` instantly (0ms transition).
+- **Click Sync Feed item:** Opens modal with raw JSON payload.
+
+---
+
+### Order Processing Pipeline
+
+**Purpose:** High-velocity deal execution and state management.
+
+**Layout:** Full-height horizontal scroll. 5 rigid columns: `NEW ENQUIRY`, `AI QUOTED`, `ESCALATION`, `ORDER CONFIRMED`, `TALLY SYNCED`.
+
+**Key Elements:**
+- **Kanban Column Headers:** `12px` JetBrains Mono, uppercase, letter-spacing `1px`. Badge with total count.
+- **Deal Cards:** Dense information layout. Client Name, Deal Value (Mono), Tags, Age in Stage.
+- **Velocity Indicator:** Colored line on the left border of cards. Green (`<24h`), Amber (`24h-72h`), Crimson (`>72h`).
+
+**States:**
+- **Empty Column:** Dashed outline box with "DROP ENTITY HERE".
+- **Loading:** Strobe effect on card backgrounds.
+
+**Components:**
+- **Deal Card:** 300x100px. `#121212` surface. Value in right corner. Bottom row contains assignee avatar (square).
+
+**Interactions:**
+- **Drag & Drop:** Ghost card leaves 1px primary dashed outline behind. Drop snaps immediately.
+- **Click AI Quote:** Triggers 1.5s matrix-style character scrambling animation while generating quote.
+
+---
+
+### Customer 360
+
+**Purpose:** Comprehensive financial and behavioral intelligence on individual accounts.
+
+**Layout:** Two-pane view. Left 30% navigation/meta-data. Right 70% tabbed detail views (Overview, Ledgers, Intelligence).
+
+**Key Elements:**
+- **Verification Header:** Large Company Name. Badge: `GSTIN VALIDATED` (solid `#00FF66` background, `#050505` text). 
+- **Financial Vitals:** `LTV`, `AVG DEAL SIZE`, `CREDIT LIMIT UTILIZATION` (progress bar).
+- **Product Affinity Matrix:** Algorithmically generated list of recommended SKUs. Format: `SKU-CODE | PROBABILITY %`.
+
+**States:**
+- **Empty (No orders):** "ZERO HISTORICAL LEDGER DATA."
+- **Error (GSTIN fail):** Flashing red banner: "GSTIN MISMATCH - AUDIT REQUIRED".
+
+**Components:**
+- **Affinity Row:** Hoverable row. Shows `BUY SIGNAL: HIGH` in green when probability > 80%.
+
+**Interactions:**
+- **Hover SKU:** Reveals historical purchase frequency in a harsh, square tooltip.
+- **Click Credit Bar:** Expands breakdown of outstanding invoices vs. hard limit.
+
+---
+
+### Data Hub
+
+**Purpose:** Bulk administrative operations and financial reconciliations.
+
+**Layout:** Command-line inspired list view. Top action bar. Large central datagrid.
+
+**Key Elements:**
+- **Tally Reconciliation Queue:** Datagrid of mismatched ledgers. Columns: `SYS_ID`, `TALLY_VCH`, `DISCREPANCY`, `ACTION`.
+- **Action Ribbon:** Square buttons. `BULK SYNC`, `FORCE RECONCILE`, `EXPORT .XLSX`.
+- **System Status Bar:** Bottom fixed footer. Ping latency to Tally server (`12ms`), active sync threads.
+
+**States:**
+- **Loading:** Entire grid replaced by skeleton rows with left-to-right sweeping highlight.
+
+**Components:**
+- **Grid Row:** 40px height. Alternating backgrounds (`#050505` and `#0A0A0B`). 1px bottom border `#27272A`.
+
+**Interactions:**
+- **Select All Checkbox:** Highlights selected rows with a 10% opacity `#00E5FF` background overlay.
+- **Click Force Reconcile:** Opens a brutalist confirmation modal with a 3-second forced delay before button activation.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML + Tailwind CSS v3
+
+**Build Order:**
+1. **Core Layout & Design Tokens:** Set up CSS variables, font imports (Satoshi/JetBrains Mono), and base black/grey palette. 
+2. **Core Sales Dashboard:** Establishes the grid system, the widget container logic (0px corners, 1px borders), and typography scale.
+3. **Order Processing Pipeline:** Introduces complex layout (horizontal scrolling) and drag-and-drop structural styling.
+4. **Customer 360:** Builds out the dense data display, tab systems, and form layouts.
+5. **Data Hub:** Finalizes datagrid patterns, bulk selection states, and system footers.
+
+</details>

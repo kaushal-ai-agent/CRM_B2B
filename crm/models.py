@@ -13,11 +13,17 @@ class Customer(models.Model):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     lead_source = models.CharField(max_length=50)
-    customer_tier = models.CharField(max_length=10)
-    is_dormant = models.BooleanField(default=False)
 
     def __str__(self):
         return self.company_name
+
+class SystemConfiguration(models.Model):
+    key = models.CharField(max_length=50, unique=True)
+    value = models.JSONField(default=dict)
+
+    def __str__(self):
+        return self.key
+
 
 class Product(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

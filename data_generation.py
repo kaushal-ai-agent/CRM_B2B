@@ -42,14 +42,13 @@ for _ in range(NUM_USERS):
     })
 df_users = pd.DataFrame(users_data)
 df_users.to_excel(f'{DATA_DIR}/users.xlsx', index=False)
-print("✅ users.xlsx created")
+print("users.xlsx created")
 
 # ==========================================
 # 2. CUSTOMERS
 # ==========================================
 industry_segments = ['Manufacturing', 'Retail', 'Hospitality', 'Hospital']
 lead_sources = ['Tally_Import', 'IndiaMART', 'TradeIndia', 'Direct']
-customer_tiers = ['A', 'B', 'C']
 cities = ['Pune', 'Mumbai', 'Delhi', 'Ahmedabad', 'Bangalore', 'Surat']
 
 customers_data = []
@@ -66,9 +65,7 @@ for i in range(NUM_CUSTOMERS):
         'industry_segment': random.choice(industry_segments),
         'city': random.choice(cities),
         'state': 'Maharashtra' if random.random() > 0.2 else fake.state(),
-        'lead_source': random.choice(lead_sources),
-        'customer_tier': random.choice(customer_tiers),
-        'is_dormant': random.random() < 0.15 # 15% chance of being dormant
+        'lead_source': random.choice(lead_sources)
     })
 df_customers = pd.DataFrame(customers_data)
 df_customers.to_excel(f'{DATA_DIR}/customers.xlsx', index=False)
@@ -238,4 +235,29 @@ df_sync = pd.DataFrame(sync_data)
 df_sync.to_excel(f'{DATA_DIR}/sync_queues.xlsx', index=False)
 print("✅ sync_queues.xlsx created")
 
-print(f"\n🎉 All 8 datasets successfully generated in the '{DATA_DIR}' folder!")
+# ==========================================
+# 9. SYSTEM_CONFIGURATIONS
+# ==========================================
+configs_data = [
+    {
+        'key': 'tiering_thresholds',
+        'value': {'A': 500000, 'B': 250000, 'C': 0}
+    },
+    {
+        'key': 'dormancy_days',
+        'value': 90
+    },
+    {
+        'key': 'churn_risk_baseline',
+        'value': 'selling_price' # Can be a string referencing which column or catalog to use
+    }
+]
+import json
+for c in configs_data:
+    c['value'] = json.dumps(c['value'])
+
+df_configs = pd.DataFrame(configs_data)
+df_configs.to_excel(f'{DATA_DIR}/system_configurations.xlsx', index=False)
+print("✅ system_configurations.xlsx created")
+
+print(f"\n🎉 All 9 datasets successfully generated in the '{DATA_DIR}' folder!")

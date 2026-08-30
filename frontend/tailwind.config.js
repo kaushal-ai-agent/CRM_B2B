@@ -3,8 +3,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'Segoe UI', 'sans-serif'],
-        display: ['Space Grotesk', 'Inter', 'Segoe UI', 'sans-serif'],
+        sans: ['IBM Plex Sans', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
+        display: ['IBM Plex Sans', 'sans-serif'],
       },
       colors: {
         crm: {
