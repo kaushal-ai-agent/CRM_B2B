@@ -111,6 +111,7 @@ This project is ready to run in local development mode when both the backend and
 ## Quick summary
 
 - Backend: `python manage.py runserver 0.0.0.0:8000`
+- AGENT service: uvicorn agent_service.app:app --port 8100 --reload
 - npm run build
 - Frontend: `cd frontend` then `npm install` and `npm run dev`
 - Open:

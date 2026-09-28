@@ -1,0 +1,25 @@
+# Agent Service — Python Dependencies
+# Install with: pip install -r agent_service/requirements.txt
+
+# ── Web Framework ───────────────────────────────────────────────────────
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+
+# ── LLM / Agent Framework ──────────────────────────────────────────────
+langchain-openai>=0.3.0
+langchain-core>=0.3.0
+langgraph>=0.2.0
+
+# ── Database ────────────────────────────────────────────────────────────
+sqlalchemy>=2.0.0
+
+# ── Configuration ──────────────────────────────────────────────────────
+pydantic-settings>=2.0.0
+pyyaml>=6.0
+
+# ── Evaluation (optional — needed for /api/v1/agent/eval/run) ──────────
+deepeval>=1.0.0
+
+# ── Testing ─────────────────────────────────────────────────────────────
+pytest>=8.0.0
+httpx>=0.27.0

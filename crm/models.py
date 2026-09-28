@@ -77,7 +77,101 @@ class Invoice(models.Model):
 class Interaction(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='interactions')
-    channel = models.CharField(max_length=50)
+    CHANNEL_CHOICES = [
+        ("Instagram", "Instagram"),
+        ("Web", "Web"),
+        ("WhatsApp", "WhatsApp"),
+    ]
+    channel = models.CharField(max_length=50, choices=CHANNEL_CHOICES)
     interaction_type = models.CharField(max_length=50)
     content_transcript = models.TextField()
     timestamp = models.DateTimeField()
+
+
+# ---------------------------------------------------------------------------
+# Auth — CRMUser & AuthToken
+# ---------------------------------------------------------------------------
+
+ROLE_CHOICES = [
+    ('Owner', 'Owner'),
+    ('Sales', 'Sales'),
+    ('Accounts', 'Accounts'),
+]
+
+
+class CRMUser(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(blank=True, null=True)
+    password_hash = models.CharField(max_length=255)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Sales')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def set_password(self, raw_password):
+        from django.contrib.auth.hashers import make_password
+        self.password_hash = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        from django.contrib.auth.hashers import check_password
+        return check_password(raw_password, self.password_hash)
+
+    def __str__(self):
+        return f"{self.username} ({self.role})"
+
+
+class AuthToken(models.Model):
+    user = models.ForeignKey(CRMUser, on_delete=models.CASCADE, related_name='tokens')
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Token for {self.user.username}"
+
+
+# -------------------------------------------------
+# Instagram linking – separate table to avoid touching existing CRMCustomer rows
+# Phone number is the natural key across channels
+class InstagramCustomerLink(models.Model):
+    phone_number = models.CharField(
+        max_length=20,
+        primary_key=True,
+        help_text="Primary key – matches CRMCustomer.phone_number"
+    )
+    instagram_id = models.CharField(
+        max_length=64,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Instagram scoped user ID (igsid)"
+    )
+    customer = models.ForeignKey(
+        'Customer',
+        on_delete=models.CASCADE,
+        related_name='instagram_links',
+        to_field='whatsapp_number',
+        db_constraint=False,
+        help_text="FK to Customer via phone_number"
+    )
+    lead_source = models.CharField(max_length=32, default='Instagram')
+
+    class Meta:
+        db_table = 'crm_instagram_customer_link'
+
+
+# Escalation model for fail‑safe handling
+class Escalation(models.Model):
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='escalations')
+    interaction = models.ForeignKey('Interaction', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=16, default='Escalated')
+    priority = models.CharField(max_length=16, default='High')
+    error_details = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(CRMUser, null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_escalations', help_text='User handling the escalation')
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolution_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+

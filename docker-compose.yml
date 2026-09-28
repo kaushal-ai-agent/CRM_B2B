@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  crm_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_DEBUG=True
+      - AGENT_SERVICE_URL=http://agent_service:8001
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
+    # In production, replace sqlite with postgres and add db service dependency
+    
+  agent_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - CRM_API_URL=http://crm_backend:8000
+      - IG_ENABLED=${IG_ENABLED:-false}
+      - IG_VERIFY_TOKEN=${IG_VERIFY_TOKEN}
+      - IG_ACCESS_TOKEN=${IG_ACCESS_TOKEN}
+      - IG_APP_ID=${IG_APP_ID}
+      - IG_APP_SECRET=${IG_APP_SECRET}
+      - IG_ACCOUNT_ID=${IG_ACCOUNT_ID}
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000/api/v1
+        VITE_AGENT_API_URL: http://localhost:8001
+    ports:
+      - "3000:80"

@@ -2,17 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
-  Building2,
   CalendarRange,
-  CreditCard,
-  Mail,
-  Phone,
   TrendingUp,
   Wallet,
   AlertTriangle,
-  PackageOpen
+  PackageOpen,
 } from 'lucide-react';
-import { fetchCustomer360 } from '../api/customerService';
+import { fetchCustomer360, fetchEscalationsApi, resolveEscalationApi } from '../api/customerService';
+import AgentChatWidget from '../components/agent/AgentChatWidget';
+import AgentErrorBoundary from '../components/agent/ErrorBoundary';
+import EscalationPill from '../components/EscalationPill';
 
 function TierBadge({ tier }) {
   const map = {
@@ -35,14 +34,20 @@ export default function Customer360() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('orders');
+  const [escalations, setEscalations] = useState([]);
+  const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchCustomer360(id);
+        const [data, escRes] = await Promise.all([
+          fetchCustomer360(id),
+          fetchEscalationsApi({ customer_id: id, status: 'Escalated' })
+        ]);
         setCustomer(data);
+        setEscalations(escRes.data?.results || []);
       } catch (err) {
         setError(err?.response?.data?.detail || err.message || 'Failed to load customer');
       } finally {
@@ -79,7 +84,7 @@ export default function Customer360() {
     return <div className="m-4 border border-[#E0E0E0] bg-white p-6 text-slate-600">Customer not found.</div>;
   }
 
-  const { company_name, gstin, city, state, contact_person, whatsapp_number, email, industry_segment, product_affinity, churn_risk_flag, is_dormant } = customer;
+  const { company_name, gstin, city, state, contact_person, whatsapp_number, industry_segment, product_affinity, churn_risk_flag, is_dormant } = customer;
 
   return (
     <div className="flex flex-col h-full space-y-6">
@@ -115,6 +120,37 @@ export default function Customer360() {
                 <TierBadge tier={customer.customer_tier} />
               </div>
             </div>
+            
+            {escalations.length > 0 && (
+              <div className="mb-4 flex items-center justify-between border border-rose-200 bg-rose-50 p-4">
+                <div>
+                  <EscalationPill label="ESCALATED" />
+                  <p className="mt-2 text-sm text-rose-800">
+                    This customer has an active AI escalation requiring human attention.
+                  </p>
+                  <p className="mt-1 text-xs text-rose-700 font-mono">
+                    {escalations[0].error_details}
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    setResolving(true);
+                    try {
+                      await resolveEscalationApi(escalations[0].id, 'Resolved from 360 view');
+                      setEscalations([]);
+                    } catch (e) {
+                      console.error('Failed to resolve', e);
+                    } finally {
+                      setResolving(false);
+                    }
+                  }}
+                  disabled={resolving}
+                  className="px-4 py-2 bg-rose-600 text-white text-sm font-medium hover:bg-rose-700 disabled:opacity-50"
+                >
+                  {resolving ? 'Resolving...' : 'Mark as Resolved'}
+                </button>
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-4 mt-6 text-sm text-slate-600">
               <div>
@@ -170,6 +206,7 @@ export default function Customer360() {
             ['orders', 'Order History'],
             ['invoices', 'Invoices & Aging'],
             ['interactions', 'Interactions Log'],
+            ['ai-chat', '🤖 AI Sales Assistant'],
           ].map(([key, label]) => (
             <button
               key={key}
@@ -260,6 +297,12 @@ export default function Customer360() {
                 )}
               </tbody>
             </table>
+          )}
+
+          {activeTab === 'ai-chat' && (
+            <AgentErrorBoundary label="AI Sales Assistant">
+              <AgentChatWidget customerId={id} />
+            </AgentErrorBoundary>
           )}
 
           {activeTab === 'interactions' && (

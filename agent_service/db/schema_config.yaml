@@ -1,0 +1,191 @@
+# =============================================================================
+# CRM_B2Btrader — Runtime Schema Descriptor
+# =============================================================================
+# This YAML file describes the database schema available to the AI agent at
+# runtime.  The agent tools use this metadata to build safe, parameterized
+# SQL queries without any hard-coded table/column names.
+#
+# To adapt the agent to a different database, replace or extend this file
+# and point SCHEMA_CONFIG_PATH in .env to the new location.
+# =============================================================================
+
+tables:
+
+  # ── Products ───────────────────────────────────────────────────────────
+  - name: crm_product
+    description: >
+      Master catalogue of all products (industrial fittings, pipes, valves,
+      pumps, fasteners).  current_stock and selling_price reflect live values.
+    primary_key: id
+    columns:
+      - name: id
+        type: char(32)
+        description: UUID primary key
+      - name: tally_item_id
+        type: varchar(100)
+        description: Reference ID from Tally ERP
+      - name: sku_code
+        type: varchar(100)
+        description: Unique Stock-Keeping Unit code (e.g. QBE-751)
+      - name: product_name
+        type: varchar(255)
+        description: Human-readable product name
+      - name: category
+        type: varchar(100)
+        description: Product category (Fittings, Pipes, Valves, Pumps, Fasteners)
+      - name: uom
+        type: varchar(20)
+        description: Unit of measure (Box, Nos, Kg, Meters)
+      - name: landed_cost
+        type: decimal
+        description: Internal landed cost — never expose to customers
+      - name: selling_price
+        type: decimal
+        description: Current catalogue selling price
+      - name: current_stock
+        type: integer
+        description: Live on-hand stock quantity
+      - name: seasonality_tag
+        type: varchar(50)
+        description: Optional seasonality label (Monsoon, Summer, Winter)
+        nullable: true
+      - name: is_dead_stock
+        type: boolean
+        description: Whether the item is flagged as dead / obsolete stock
+
+  # ── Customers ──────────────────────────────────────────────────────────
+  - name: crm_customer
+    description: B2B customer master records.
+    primary_key: id
+    columns:
+      - name: id
+        type: char(32)
+        description: UUID primary key
+      - name: company_name
+        type: varchar(255)
+        description: Registered company name
+      - name: contact_person
+        type: varchar(255)
+        description: Primary contact person name
+      - name: whatsapp_number
+        type: varchar(20)
+        description: WhatsApp contact number
+      - name: industry_segment
+        type: varchar(50)
+        description: Industry segment (Manufacturing, Retail, Hospitality, Hospital)
+      - name: city
+        type: varchar(100)
+        description: City
+      - name: state
+        type: varchar(100)
+        description: State
+
+  # ── Orders ─────────────────────────────────────────────────────────────
+  - name: crm_order
+    description: Sales order headers.
+    primary_key: id
+    columns:
+      - name: id
+        type: char(32)
+        description: UUID primary key
+      - name: customer_id
+        type: char(32)
+        description: FK → crm_customer.id
+      - name: order_date
+        type: datetime
+        description: Order placement date
+      - name: total_value
+        type: decimal
+        description: Total order value
+      - name: status
+        type: varchar(50)
+        description: Order status (Pending, Confirmed, Shipped, Delivered, Synced_To_Tally)
+    foreign_keys:
+      - column: customer_id
+        references_table: crm_customer
+        references_column: id
+
+  # ── Order Items ────────────────────────────────────────────────────────
+  - name: crm_orderitem
+    description: Line items within an order.
+    primary_key: id
+    columns:
+      - name: id
+        type: char(32)
+        description: UUID primary key
+      - name: order_id
+        type: char(32)
+        description: FK → crm_order.id
+      - name: product_id
+        type: char(32)
+        description: FK → crm_product.id
+      - name: quantity
+        type: integer
+        description: Ordered quantity
+      - name: unit_price_applied
+        type: decimal
+        description: Unit price applied at time of order
+      - name: discount_offered
+        type: decimal
+        description: Discount applied per unit
+    foreign_keys:
+      - column: order_id
+        references_table: crm_order
+        references_column: id
+      - column: product_id
+        references_table: crm_product
+        references_column: id
+
+  # ── Interactions ───────────────────────────────────────────────────────
+  - name: crm_interaction
+    description: Communication logs across WhatsApp, Email, AI Chat.
+    primary_key: id
+    columns:
+      - name: id
+        type: char(32)
+        description: UUID primary key
+      - name: customer_id
+        type: char(32)
+        description: FK → crm_customer.id
+      - name: channel
+        type: varchar(50)
+        description: Communication channel (WhatsApp, Email)
+      - name: interaction_type
+        type: varchar(50)
+        description: Type (AI_Chat, Campaign_Blast, Payment_Reminder, Quote_Sent)
+      - name: content_transcript
+        type: text
+        description: Full text transcript of the interaction
+      - name: timestamp
+        type: datetime
+        description: Interaction timestamp
+    foreign_keys:
+      - column: customer_id
+        references_table: crm_customer
+        references_column: id
+
+  # ── Invoices ───────────────────────────────────────────────────────────
+  - name: crm_invoice
+    description: Sales invoices and receivable records.
+    primary_key: id
+    columns:
+      - name: id
+        type: char(32)
+        description: UUID primary key
+      - name: customer_id
+        type: char(32)
+        description: FK → crm_customer.id
+      - name: total_amount
+        type: decimal
+        description: Total invoice amount
+      - name: outstanding_amount
+        type: decimal
+        description: Amount still owed
+      - name: aging_bucket
+        type: varchar(50)
+        description: Aging classification (0_30_Days, 31_60_Days, etc.)
+        nullable: true
+    foreign_keys:
+      - column: customer_id
+        references_table: crm_customer
+        references_column: id

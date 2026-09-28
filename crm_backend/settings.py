@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -132,4 +134,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+]
+
+# ---------------------------------------------------------------------------
+# CRM Seed Users — read from environment with safe fallback defaults
+# ---------------------------------------------------------------------------
+CRM_SEED_USERS = [
+    {
+        'username': os.getenv('CRM_OWNER_USERNAME', 'owner'),
+        'password': os.getenv('CRM_OWNER_PASSWORD', 'owner123'),
+        'name':     os.getenv('CRM_OWNER_NAME', 'Rahul Sharma'),
+        'role':     'Owner',
+    },
+    {
+        'username': os.getenv('CRM_SALES1_USERNAME', 'amit.sales'),
+        'password': os.getenv('CRM_SALES1_PASSWORD', 'sales123'),
+        'name':     os.getenv('CRM_SALES1_NAME', 'Amit Verma'),
+        'role':     'Sales',
+    },
+    {
+        'username': os.getenv('CRM_SALES2_USERNAME', 'priya.sales'),
+        'password': os.getenv('CRM_SALES2_PASSWORD', 'sales123'),
+        'name':     os.getenv('CRM_SALES2_NAME', 'Priya Nair'),
+        'role':     'Sales',
+    },
 ]
