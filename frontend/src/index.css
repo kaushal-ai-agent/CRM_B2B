@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply min-h-screen text-[#0F172A] antialiased;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #F8FAFC;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    border-radius: 0 !important;
+  }
+
+  /* Enforce 0px border radius and no box-shadow globally for components if needed */
+  * {
+    border-radius: 0px !important;
+    box-shadow: none !important;
+  }
+
+  ::selection {
+    background: rgba(37, 99, 235, 0.2);
+    color: #0F172A;
+  }
+}

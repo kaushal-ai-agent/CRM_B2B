@@ -1,0 +1,221 @@
+# Elevated Monochrome (Executive CRM)
+
+## Product Overview
+
+**The Pitch:** SalesOS is an executive-grade sales intelligence command center. It distills complex financial, pipeline, and inventory data into a high-signal, zero-noise interface.
+
+**For:** Business owners and C-suite executives who need immediate, accurate clarity on company health without tactical task clutter.
+
+**Device:** desktop
+
+**Design Direction:** Financial broadsheet meets modern software. Stark black and white, elegant serif typography, generous white space, and restrained gold accents to highlight critical action items. 
+
+**Inspired by:** The Financial Times digital edition, Stripe Corporate.
+
+---
+
+## Screens
+
+- **Live Reporting Dashboard:** Executive summary of revenue, receivables, and system sync health.
+- **Customer Master Directory:** Ledger-style CRM database with tiering and balance tracking.
+- **Lead Pipeline & AI Monitor:** Split-screen view for reviewing AI-handled conversations and stepping in.
+- **Deep Analysis & Reports:** Algorithmic insights highlighting margin risks, dead stock, and Pareto distribution.
+
+---
+
+## Key Flows
+
+**Daily Executive Health Check:** Reviewing macro performance and intercepting flagged leads.
+
+1. User is on Live Reporting Dashboard -> sees MTD revenue and a blinking gold alert for "Handover Requested"
+2. User clicks "Handover Requested" -> opens Lead Pipeline & AI Monitor focused on specific WhatsApp transcript
+3. User reviews AI conversation history -> clicks "Assume Control" -> AI pauses, input field activates
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#111111` - Buttons, primary actions, deep backgrounds
+- **Background:** `#FDFCF9` - Page background (warm newsprint off-white)
+- **Surface:** `#FFFFFF` - Cards, tables, distinct content areas
+- **Text:** `#1A1A1A` - Body text, primary data points
+- **Muted:** `#737373` - Secondary text, hairlines, table headers
+- **Accent:** `#C29B38` - Handover alerts, Pareto highlights, critical focus states
+
+## Typography
+
+Contrasting an elegant, authoritative serif with a highly legible, technical sans-serif for financial data.
+
+- **Headings:** `Playfair Display`, 600, 24-40px, tight tracking (-0.02em)
+- **Body:** `Inter`, 400, 14px, 150% line height
+- **Data/Numbers:** `JetBrains Mono`, 400, 13px (tabular lining)
+- **Small text:** `Inter`, 500, 11px, uppercase, wide tracking (0.05em)
+- **Buttons:** `Inter`, 500, 13px
+
+**Style notes:** Zero border radius on all elements. No drop shadows. UI depth is created through 1px solid `#EAE8E3` borders, hairline dividers, and strict typographic hierarchy.
+
+## Design Tokens
+
+```css
+:root {
+  --color-primary: #111111;
+  --color-background: #FDFCF9;
+  --color-surface: #FFFFFF;
+  --color-text: #1A1A1A;
+  --color-muted: #737373;
+  --color-accent: #C29B38;
+  --color-border: #EAE8E3;
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 0px;
+  --spacing-sm: 8px;
+  --spacing-md: 24px;
+  --spacing-lg: 48px;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### Live Reporting Dashboard
+
+**Purpose:** Macro-level view of daily and monthly business performance.
+
+**Layout:** 3-column editorial grid. Wide central column for revenue, narrow right column for live feeds.
+
+**Key Elements:**
+- **MTD Revenue Block:** `Playfair Display`, 48px, `#111111`. Subtext: "+14% SMLY" in `JetBrains Mono`, `#737373`.
+- **Aging Receivables:** Horizontal stacked bar. Black for <30 days, gray for 30-60, gold `#C29B38` for >90 days.
+- **Tally Sync Status:** Top right corner. 8px square indicator. Green `#2E4F2B` (synced) or Gold `#C29B38` (syncing).
+
+**States:**
+- **Empty:** "No financial data synced. Connect ERP." (center aligned, `Playfair Display`)
+- **Loading:** Skeleton lines masking data points, wiping left-to-right.
+- **Error:** `#111111` banner at top: "Tally Sync Failed. Last updated 14:02."
+
+**Components:**
+- **Metric Card:** 100% width, pure white background, 1px `#EAE8E3` border bottom only. 24px padding.
+- **Enquiry Feed Item:** 14px text, timestamp in mono.
+
+**Interactions:**
+- **Hover Receivables Bar:** Tooltip shows exact ledger balance and top 3 debtors.
+- **Click Sync Status:** Forces immediate manual refresh from ERP.
+
+**Responsive:**
+- **Desktop:** 3-column grid (Left nav, Main Data, Live Feed).
+- **Tablet:** 2-column grid (Live Feed drops below Main Data).
+- **Mobile:** Single column stack, hidden sidebars.
+
+### Customer Master Directory
+
+**Purpose:** Ledger-style view of client health and outstanding balances.
+
+**Layout:** Edge-to-edge data table. Prominent search bar header.
+
+**Key Elements:**
+- **Ledger Table:** No vertical borders. 1px solid bottom borders per row. Right-aligned financial columns.
+- **Tiering Badges:** 1px solid border rectangles. "Tier A" (`#111111`), "Tier B" (`#737373`), "Tier C" (`#EAE8E3`).
+- **Search Header:** Massive 32px input text, border-bottom only. Placeholder: "Search ledger by name or GSTIN..."
+
+**States:**
+- **Empty:** "No matching records found."
+- **Loading:** Spinning 16px geometric loader in search field.
+- **Error:** N/A
+
+**Components:**
+- **Export Button:** Top right. Solid `#111111` background, white text. Text: "Export to Excel".
+- **Balance Cell:** `JetBrains Mono`. Red text (`#8B0000`) if overdue > 60 days.
+
+**Interactions:**
+- **Click Row:** Expands accordion downward revealing recent 3 invoices and contact info.
+- **Hover Row:** Row background shifts to `#F5F4F0`.
+
+**Responsive:**
+- **Desktop:** Full 8-column table.
+- **Tablet:** Collapse minor columns (address, exact last order date).
+- **Mobile:** Card-based list instead of table layout.
+
+### Lead Pipeline & AI Monitor
+
+**Purpose:** Oversee AI-driven sales conversations and intervene when human context is needed.
+
+**Layout:** Exact 50/50 vertical split screen. Left: Lead Inbox. Right: Active Transcript.
+
+**Key Elements:**
+- **Inbox List:** Left column. Name, last message snippet, 11px uppercase status tags (e.g., `QUALIFYING`, `HANDOVER`).
+- **Transcript View:** Right column. WhatsApp-style bubbles but sharp corners, grayscale.
+- **Handover Alert:** Persistent top banner in transcript view if AI detects frustration. Background `#C29B38`, text `#FFFFFF`. Button: "Assume Control".
+
+**States:**
+- **Empty (Inbox):** "Pipeline zero. All leads processed."
+- **Loading:** Blinking cursor block `█` for incoming AI messages.
+- **Error:** "Failed to send message. Retry." text link below bubble.
+
+**Components:**
+- **AI Bubble:** `#F5F4F0` background, left-aligned, sharp corners. 
+- **Lead Bubble:** `#FFFFFF` background, 1px `#EAE8E3` border, right-aligned, sharp corners.
+- **Composer:** Bottom of right column. Disabled until "Assume Control" is clicked.
+
+**Interactions:**
+- **Click "Assume Control":** Composer unlocks, status tag changes to `MANUAL`, system logs "Executive joined chat".
+- **Hover Inbox Item:** Right arrow icon `→` appears.
+
+**Responsive:**
+- **Desktop:** Side-by-side 50/50 split.
+- **Tablet:** 30/70 split (Inbox collapses to narrow list).
+- **Mobile:** Two distinct screens (Inbox taps into Transcript).
+
+### Deep Analysis & Reports
+
+**Purpose:** Identifying structural business issues (margin erosion, dead stock).
+
+**Layout:** Masonry grid of disparate report cards, mimicking newspaper articles.
+
+**Key Elements:**
+- **Pareto 80/20 Chart:** Bar chart showing customer revenue concentration. The top 20% bars are colored `#C29B38`, the rest `#EAE8E3`.
+- **Margin Snapshot:** Big bold percentages. `Playfair Display`, 64px. Arrow indicators `↑` or `↓`.
+- **Dead Stock Warning List:** Plain text list of SKUs with $>10k tied up for >180 days.
+
+**States:**
+- **Empty:** "Gathering 30 days of data to compute insights."
+- **Loading:** Shimmering monochrome blocks.
+- **Error:** "Analysis engine timed out."
+
+**Components:**
+- **Insight Card:** 1px solid `#111111` border. 32px padding. `Playfair` header per card.
+- **SKU Tag:** `JetBrains Mono`, 12px, gray background `#F5F4F0`.
+
+**Interactions:**
+- **Hover Pareto Bar:** Tooltip shows cumulative revenue percentage.
+- **Click SKU:** Opens modal with purchasing history.
+
+**Responsive:**
+- **Desktop:** 3-column masonry grid.
+- **Tablet:** 2-column masonry grid.
+- **Mobile:** Single column stack.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML + Tailwind CSS v3
+
+**Build Order:**
+1. **Design System Setup:** Configure Tailwind `tailwind.config.js` with exact fonts (`Playfair Display`, `Inter`, `JetBrains Mono`), colors, and disable default border radius settings.
+2. **Customer Master Directory:** Establishes the core data-display paradigm (tables, mono fonts, zero-radius badges).
+3. **Live Reporting Dashboard:** Implements the editorial layout grids and macro typography scales.
+4. **Lead Pipeline & AI Monitor:** Builds the interactive split-screen layout and scrollable states.
+5. **Deep Analysis & Reports:** Reuses typography and border tokens to build complex charts and masonry layouts.
+
+</details>

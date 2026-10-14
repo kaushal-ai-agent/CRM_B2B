@@ -1,0 +1,214 @@
+# Elevated Monochrome (Executive CRM)
+
+## Product Overview
+
+**The Pitch:** An executive-grade B2B sales intelligence command center that transforms complex ERP data into a calm, high-density editorial interface. It strips away noisy task management to focus purely on revenue performance, aging receivables, and automated pipeline monitoring.
+
+**For:** Managing Directors, Chief Revenue Officers, and Senior Sales Directors who need immediate, crystal-clear visibility into high-level metrics, cash flow, and key account health without navigating complex menus.
+
+**Device:** desktop
+
+**Design Direction:** A premium, minimal aesthetic relying on high-contrast grayscale, fine typography, and strategic muted gold accents to signal importance. It feels more like a financial broadsheet than a SaaS tool.
+
+**Inspired by:** Bloomberg Terminal (density/data) meets The New York Times app (editorial elegance).
+
+---
+
+## Screens
+
+- **Live Reporting Dashboard:** Executive summary of daily revenue, aging receivables, and slow-moving inventory.
+- **Customer Master Directory:** High-density, searchable ledger of all accounts with tiering and outstanding balances.
+- **Lead Pipeline & AI Monitor:** Split-screen view of inbound inquiries and automated WhatsApp chat transcripts.
+- **Deep Analysis & Reports:** Analytical deep-dive into margin snapshots and 80/20 Pareto revenue distribution.
+
+---
+
+## Key Flows
+
+**Daily Executive Briefing:** Director checks morning financial health.
+
+1. User is on **Live Reporting Dashboard** -> sees MTD revenue vs SMLY prominently at the top.
+2. User clicks **90+ Days Overdue metric** -> opens filtered table of specific defaulting accounts.
+3. User views exact outstanding balances and clicks 'Export Report' for accounts team.
+
+**Intervening in AI Handovers:** Director reviews a high-value inbound lead.
+
+1. User is on **Lead Pipeline & AI Monitor** -> sees a muted gold `Handover Requested` alert.
+2. User clicks the **IndiaMART Lead** -> views the AI WhatsApp chat transcript on the right panel.
+3. User reads context, approves the automated quote, and assigns it to a senior sales rep.
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#C5A880` - Muted gold (Buttons, critical highlights, Tier A badges)
+- **Background:** `#F4F4F2` - Warm alabaster (Page background)
+- **Surface:** `#FFFFFF` - Crisp white (Cards, data tables, modals)
+- **Text:** `#1A1A1A` - Deep charcoal (Headings, primary data)
+- **Muted:** `#808080` - Neutral gray (Secondary text, table headers, timestamps)
+- **Accent/Alert:** `#8C3A3A` - Brick red (Overdue aging, dead stock warnings)
+- **Border:** `#E5E5E3` - Fine silver (Dividers, table borders)
+
+## Typography
+
+Playfair Display establishes executive authority, while Satoshi handles dense data grids with perfect legibility. 
+
+- **Headings:** `Playfair Display`, 600, 24-36px
+- **Subheadings:** `Satoshi`, 500, 12px, uppercase, 1.5px letter-spacing
+- **Body Data:** `Satoshi`, 400, 14px, tabular numbers enabled
+- **Small Metrics:** `Satoshi`, 500, 11px
+- **Buttons/Labels:** `Satoshi`, 500, 13px
+
+**Style notes:** `0px` border radius on all elements. Absolute sharp corners. Drop shadows are entirely removed in favor of 1px solid borders (`#E5E5E3`). Generous 32px padding in containers, contrasting with tight, high-density data tables.
+
+## Design Tokens
+
+```css
+:root {
+  --color-primary: #C5A880;
+  --color-background: #F4F4F2;
+  --color-surface: #FFFFFF;
+  --color-text: #1A1A1A;
+  --color-muted: #808080;
+  --color-alert: #8C3A3A;
+  --color-border: #E5E5E3;
+  
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Satoshi', sans-serif;
+  
+  --radius: 0px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 32px;
+  --spacing-xl: 64px;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### Live Reporting Dashboard
+
+**Purpose:** The daily command center for executive oversight on revenue and cash flow.
+
+**Layout:** 3-column top metrics row, followed by a 2-column split (Aging Table on left, Slow-moving SKUs on right).
+
+**Key Elements:**
+- **MTD Revenue Widget:** `Playfair Display` `36px` value. Subtext shows SMLY (Same Month Last Year) variance in `#808080` (if negative) or `#C5A880` (if positive).
+- **Aging Table (30/60/90+):** Strict tabular layout. 90+ column text colored `#8C3A3A`.
+- **Today's Enquiries Ticker:** Minimalist right-aligned feed. `11px` uppercase labels for source (e.g., `TRADEINDIA`, `DIRECT`).
+
+**States:**
+- **Empty:** "Awaiting ERP Sync" in `14px` `#808080`, centered in widget.
+- **Loading:** Subtle grayscale skeleton pulses without animation.
+- **Error:** 1px `#8C3A3A` border around failed widget, "Connection Lost" text.
+
+**Components:**
+- **Metric Card:** `Surface` `#FFFFFF`, `Border` 1px solid `#E5E5E3`, 24px padding.
+- **Overdue Row:** Hover state changes background to `#F9F9F8`.
+
+**Interactions:**
+- **Click [Aging Row]:** Opens right-side drawer with specific invoice details.
+- **Hover [Variance %]:** Shows exact monetary difference tooltip in `#1A1A1A` box, white text.
+
+**Responsive:**
+- **Desktop:** 1440px max-width, centered, 64px side margins.
+- **Tablet/Mobile:** Not supported. Desktop-only executive view.
+
+### Customer Master Directory
+
+**Purpose:** High-density, searchable ledger of all client accounts and outstanding balances.
+
+**Layout:** Full-width data table beneath a single-row utility bar (Search + Export).
+
+**Key Elements:**
+- **Search Bar:** Bottom border only (1px solid `#1A1A1A`), no background. `14px` placeholder "Search by Account or GSTIN...".
+- **Tier Badges:** 
+  - `Tier A`: `#FFFFFF` text on `#C5A880` background, 2px padding, `11px` text.
+  - `Tier B`: `#1A1A1A` text, 1px solid `#E5E5E3` border.
+- **Data Table:** Columns: Account Name, GSTIN, Tier, YTD Volume, Outstanding Balance, Last Order Date.
+
+**States:**
+- **Empty:** "No accounts match query."
+- **Loading:** Table rows grayed out (`opacity-50`).
+
+**Components:**
+- **Export Button:** Ghost button, `13px` uppercase, 1px solid `#E5E5E3` border, text `#1A1A1A`.
+
+**Interactions:**
+- **Click [Export]:** Button text changes to "GENERATING..." then downloads CSV.
+- **Hover [Row]:** Subtle `#F4F4F2` highlight. 
+
+**Responsive:**
+- **Desktop:** 100% width, sticky header.
+
+### Lead Pipeline & AI Monitor
+
+**Purpose:** Monitor automated inbound channels and step in when AI requires human handover.
+
+**Layout:** 30/70 split screen. Left side: Lead Inbox. Right side: Chat Transcript & Quote Details.
+
+**Key Elements:**
+- **Lead Inbox Item:** Displays Source (WhatsApp/IndiaMART), Contact Name, and Time. `Border-left: 2px solid #C5A880` if unread.
+- **Handover Alert:** `12px` label, background `#8C3A3A`, text `#FFFFFF`, reading `HUMAN REQUIRED`.
+- **Transcript View:** Minimal chat bubbles. AI text is `#1A1A1A` on `#F4F4F2`. Lead text is `#1A1A1A` on `#FFFFFF` with 1px border.
+
+**States:**
+- **Empty:** Right pane shows `Playfair Display` "Select an inquiry to review transcript."
+
+**Components:**
+- **Approve Quote Button:** Solid `#1A1A1A` background, `#FFFFFF` text, `14px`, 0px radius.
+
+**Interactions:**
+- **Click [Lead Item]:** Instantly swaps transcript on the right. Active state gets `#F4F4F2` background.
+- **Click [Approve Quote]:** Triggers a minimal toast notification top-right: "Quote dispatched."
+
+**Responsive:**
+- **Desktop:** Fixed height (`100vh - header`), independent internal scrolling for both panes.
+
+### Deep Analysis & Reports
+
+**Purpose:** Macro-level insights into margins and inventory health.
+
+**Layout:** 2x2 grid of large, expansive chart containers.
+
+**Key Elements:**
+- **80/20 Pareto Chart:** Monochrome bar chart (Top accounts by revenue). Top 20% bars are `#1A1A1A`, remaining 80% are `#E5E5E3`.
+- **Margin Snapshot Table:** High-density text table showing SKU category, Avg Margin %, and MoM variance.
+- **Dead Stock Warning:** List format. Highlights SKU, Days in Warehouse, and Locked Capital in `#8C3A3A`.
+
+**States:**
+- **Loading:** Skeleton charts.
+
+**Components:**
+- **Section Headers:** `Playfair Display`, `24px`, `#1A1A1A`, 1px border bottom `#E5E5E3`.
+
+**Interactions:**
+- **Hover [Pareto Bar]:** Displays exact revenue figure and percentage of total.
+
+**Responsive:**
+- **Desktop:** Grid scales proportionally. Min-width 400px per chart container.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML + Tailwind CSS v3 + Recharts (for Pareto/Charts)
+
+**Build Order:**
+1. **Live Reporting Dashboard** - Establishes the core container layout, typography scale, widget border styling, and metric density.
+2. **Customer Master Directory** - Defines the complex data table structure, pagination (if any), and exact cell padding requirements.
+3. **Lead Pipeline & AI Monitor** - Implements the split-pane fixed-height scrolling layout and chat transcript components.
+4. **Deep Analysis & Reports** - Integrates charting libraries, applying the strict monochrome/gold color token rules to SVG elements.
+
+</details>

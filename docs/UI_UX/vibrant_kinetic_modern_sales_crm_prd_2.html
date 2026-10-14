@@ -1,0 +1,231 @@
+# Vibrant Kinetic (Modern Sales CRM)
+
+## Product Overview
+
+**The Pitch:** A high-velocity B2B CRM directly bridged to Tally ERP. Eliminates manual data entry and superficial gamification in favor of raw financial momentum, uncompromising data density, and instant sync capabilities.
+
+**For:** B2B sales directors and finance controllers who demand real-time visibility into pipeline velocity, Tally synchronization, and aging receivables without UI clutter.
+
+**Device:** desktop
+
+**Design Direction:** Obsidian-dark, high-contrast B2B interface. Razor-sharp structural borders with strategic neon accents strictly reserved for data status and alerts. 
+
+**Inspired by:** Bloomberg Terminal (data density), Linear (dark mode execution)
+
+---
+
+## Screens
+
+- **Core Sales Dashboard:** Financial command center featuring MTD tracking, aging buckets, and live Tally sync status.
+- **Order Processing Pipeline:** Kanban-style workflow transforming new enquiries into Tally-synced orders.
+- **Customer 360:** Comprehensive client dossier with A/B/C tiering, GSTIN validation, and product affinity algorithms.
+- **Data Hub & Sync Control:** Global utility center for one-click Excel exports and bulk Tally reconciliation.
+
+---
+
+## Key Flows
+
+**Pipeline Progression & Tally Sync:** Rep advances an AI-quoted lead to confirmed order.
+1. User is on **Order Processing Pipeline** -> sees `AI Quoted` column.
+2. User drags card to `Order Confirmed` -> triggers Tally validation check.
+3. Card border flashes `#00F0FF`, status updates to `Tally Synced` with a neon green `#39FF14` badge.
+
+**Exporting Aging Receivables:** Finance manager needs a 90+ days aging report.
+1. User is on **Core Sales Dashboard** -> views `Receivables Aging` module.
+2. User clicks `Export CSV` icon -> instant download initiates.
+3. System logs export and flashes a brief success toast in the global utility header.
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#39FF14` - Neon Green (Success, Sync complete, Primary CTAs)
+- **Background:** `#0C0D11` - Obsidian (Main app background)
+- **Surface:** `#16181D` - Slate (Cards, panels, modals)
+- **Text:** `#E4E7EB` - Primary body and headings
+- **Muted:** `#8B949E` - Secondary text, grid lines
+- **Accent:** `#00F0FF` - Electric Blue (Processing, AI states, active selections)
+- **Warning:** `#FFB000` - Amber (Escalations, pending syncs)
+- **Danger:** `#FF3366` - Crimson (Overdue payments, sync failures)
+- **Border:** `#272B33` - Structural lines, dividers
+
+## Typography
+
+- **Headings:** `Clash Display`, 600, 24-32px
+- **Body:** `Satoshi`, 400, 14-16px
+- **Data & Numbers:** `JetBrains Mono`, 500, 13px (Monospaced for financial alignment)
+- **Small text/Badges:** `JetBrains Mono`, 600, 11px uppercase
+- **Buttons:** `Satoshi`, 600, 14px
+
+**Style notes:** 0px border radius (sharp corners), 1px solid borders (`#272B33`) on all surfaces, no drop shadows. Depth is created through border contrast and typography weights. Focus rings are 1px solid `#39FF14`.
+
+## Design Tokens
+
+```css
+:root {
+  --color-primary: #39FF14;
+  --color-background: #0C0D11;
+  --color-surface: #16181D;
+  --color-text: #E4E7EB;
+  --color-muted: #8B949E;
+  --color-accent: #00F0FF;
+  --color-border: #272B33;
+  --font-heading: 'Clash Display', sans-serif;
+  --font-body: 'Satoshi', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 0px;
+  --spacing: 16px;
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### Core Sales Dashboard
+
+**Purpose:** Executive overview of real-time sales metrics and Tally sync health.
+
+**Layout:** 
+- Top: Global utility header (Sync status, Export actions)
+- Middle: 4x KPI grid (MTD Revenue vs Last Year, Today's Enquiries, Active Escalations, Sync Failures)
+- Bottom Left: 30/60/90+ Aging Receivables bar chart
+- Bottom Right: Live Tally Sync feed log
+
+**Key Elements:**
+- **MTD Revenue Card:** `Clash Display` 32px, green up-arrow, variance % in `JetBrains Mono`.
+- **Aging Receivables Chart:** High-contrast horizontal bars. 90+ bucket colored `#FF3366`.
+- **Global Tally Badge:** Header component. Pulsing `#39FF14` dot when connected, solid `#FF3366` if disconnected.
+
+**States:**
+- **Empty:** "No data for current period" in `#8B949E` with a prompt to adjust filters.
+- **Loading:** Skeleton loaders with a `#16181D` to `#272B33` shimmer effect.
+- **Error:** Red dashed border with "Tally Connection Lost - Retry" button.
+
+**Components:**
+- **KPI Card:** 240x120px, `#16181D` background, 1px `#272B33` border.
+- **Export Button:** 32x32px icon button, hover background `#272B33`, triggers CSV download.
+
+**Interactions:**
+- **Hover Chart Bar:** Shows exact INR amount in monospaced tooltip.
+- **Click Tally Badge:** Opens sync connection settings modal.
+
+**Responsive:**
+- **Desktop:** 4-column KPI grid, 2-column bottom section.
+- **Tablet:** 2-column KPI grid, stacked bottom section.
+- **Mobile:** 1-column layout, sticky header.
+
+### Order Processing Pipeline
+
+**Purpose:** Kanban board tracking lifecycle from Enquiry to Tally synced order.
+
+**Layout:** 5 distinct columns: `New Enquiry` -> `AI Quoted` -> `Escalation` -> `Order Confirmed` -> `Tally Synced`.
+
+**Key Elements:**
+- **Pipeline Columns:** Full-height containers with `JetBrains Mono` column counts at the top.
+- **Lead Cards:** Compact design showing Company Name, Value (INR), and Aging (days).
+- **AI Quote Badge:** Electric Blue `#00F0FF` text on card indicating auto-generated pricing.
+
+**States:**
+- **Empty:** "No active leads in this stage" watermark.
+- **Loading:** Ghost cards rendering top-down.
+- **Error:** Card border turns `#FF3366` if sync to Tally fails upon drag-and-drop.
+
+**Components:**
+- **Lead Card:** 280px wide, `#16181D` surface, left border indicates priority (`#FF3366` for urgent).
+- **Stage Counter:** `11px JetBrains Mono`, pill shape with `#272B33` background.
+
+**Interactions:**
+- **Drag Card:** Source column dims slightly, destination column highlights with a 1px `#00F0FF` border.
+- **Drop in "Tally Synced":** Brief 300ms loading spinner, then card border flashes `#39FF14`.
+
+**Responsive:**
+- **Desktop:** Horizontal scroll across all 5 columns.
+- **Tablet:** Horizontal scroll with snap-to-column.
+- **Mobile:** List view grouped by stage, accordion style.
+
+### Customer 360
+
+**Purpose:** Deep-dive dossier on individual B2B accounts.
+
+**Layout:** 
+- Left Sidebar: Company Info, Tiering, GSTIN, Contact details.
+- Main Area (Top): Financial summary (Total Outstanding, Lifetime Value).
+- Main Area (Bottom): Tabbed interface (Order History, Affinity Scores, Tally Ledger).
+
+**Key Elements:**
+- **Tier Badge:** `A`, `B`, or `C` in a 40x40px square, high-contrast monochrome.
+- **GSTIN Validator:** Monospaced text with a green checkmark (`#39FF14`) if synced and valid in Tally.
+- **Affinity Scores Table:** Dense data table ranking product categories by purchase probability (0.00 to 1.00).
+
+**States:**
+- **Empty:** Tabs show "No history available" if new customer.
+- **Loading:** Data grid renders empty rows with a pulsing opacity.
+- **Error:** "Failed to fetch ledger from Tally" with manual refresh icon.
+
+**Components:**
+- **Affinity Row:** Hover state changes background to `#272B33`, score > 0.85 highlighted in `#00F0FF`.
+- **Data Table:** 1px borders everywhere. Sticky header. No alternating row colors.
+
+**Interactions:**
+- **Click GSTIN:** Copies to clipboard, shows "COPIED" tooltip.
+- **Hover Ledger Row:** Displays full invoice details inline.
+
+**Responsive:**
+- **Desktop:** 300px sidebar, fluid main content area.
+- **Tablet:** Stacked layout, sidebar becomes a collapsible top section.
+- **Mobile:** Single column, tabs convert to full-width accordions.
+
+### Data Hub & Sync Control
+
+**Purpose:** Centralized command for bulk operations, export management, and Tally reconciliation.
+
+**Layout:** Split-pane design. Left: Log of recent syncs and exports. Right: Bulk action controls and error resolution center.
+
+**Key Elements:**
+- **Sync Log Table:** Timestamp, Entity, Action, Status (Success/Fail).
+- **Export Utility Block:** Checkboxes for datasets (Invoices, Customers, Leads) and a giant "Generate Excel" button.
+- **Error Resolution Queue:** List of records that failed Tally validation (e.g., missing GSTIN).
+
+**States:**
+- **Empty:** "All systems synced. Zero conflicts." in `#8B949E`.
+- **Loading:** "Compiling Excel..." with a monospaced percentage counter.
+- **Error:** Specific row in queue turns red, requires manual inline edit.
+
+**Components:**
+- **Generate Button:** Full width, `#39FF14` background, `#0C0D11` text, `Clash Display` font.
+- **Status Label:** `[SYNCED]` in neon green, `[FAILED]` in crimson.
+
+**Interactions:**
+- **Click Generate:** Button text changes to "Processing...", progress bar fills bottom of button.
+- **Click Resolve:** Opens inline editor to fix validation errors before re-syncing.
+
+**Responsive:**
+- **Desktop:** 50/50 split pane.
+- **Tablet:** Stacked panes, queue on top.
+- **Mobile:** Mobile view restricted, prompts user to switch to desktop for bulk operations.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML + Tailwind CSS v3
+
+**Build Order:**
+1. **Design System Setup:** Configure `tailwind.config.js` with exact hex codes, custom fonts (`Clash Display`, `Satoshi`, `JetBrains Mono`), and overriding default border radii to `0px`.
+2. **Global Utilities (Header/Layout):** Establishes the structural 1px borders, navigation, and global Tally sync badge.
+3. **Core Sales Dashboard:** Builds out the dense typography hierarchy, data tables, and high-contrast KPI cards.
+4. **Order Processing Pipeline:** Implements drag-and-drop mechanics and strict state-based color coding.
+5. **Customer 360:** Finalizes the dense data grids, tabs, and detailed typography alignment.
+6. **Data Hub:** Reuses table components and implements the bulk action UI.
+
+</details>

@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-10-14T16:06:27.407Z",
+  "source": "frontend",
+  "level": "INFO",
+  "message": "Nav Tab Click: \"Dashboard\"",
+  "path": "/customer/46151e1a-4d12-43dd-8b10-0177e74244d6",
+  "payload": {
+    "action": "Nav Tab Click",
+    "label": "Dashboard",
+    "element": "a",
+    "href": "/dashboard"
+  }
+}
