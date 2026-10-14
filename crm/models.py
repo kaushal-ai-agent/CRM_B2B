@@ -146,6 +146,12 @@ class InstagramCustomerLink(models.Model):
         blank=True,
         help_text="Instagram scoped user ID (igsid)"
     )
+    instagram_username = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Instagram Username fetched from Graph API"
+    )
     customer = models.ForeignKey(
         'Customer',
         on_delete=models.CASCADE,

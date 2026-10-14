@@ -53,7 +53,8 @@ def audit_node(state: AgentState) -> dict[str, Any]:
             grounded_response=state.get("response_text", ""),
             citations=state.get("citations"),
             latency_ms=round(latency_ms, 2),
-            token_usage=None,  # populated when OpenRouter returns usage headers
+            token_usage=state.get("token_usage"),
+            execution_trace=state.get("execution_trace"),
         )
     except Exception as exc:
         logger.error("Audit log write failed: %s", exc)

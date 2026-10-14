@@ -22,13 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-yz-q(9*x26bvv)dit&=bq2^5%3(&=40qzk#v^#h9*(+rkml_65'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-yz-q(9*x26bvv)dit&=bq2^5%3(&=40qzk#v^#h9*(+rkml_65')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,.trycloudflare.com,0.0.0.0,crm_backend').split(',') if h.strip()
+]
 
 # Application definition
 
@@ -131,10 +132,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Allow React frontend to access the API
-CORS_ALLOWED_ORIGINS = [
+_extra_cors = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
+CORS_ALLOWED_ORIGINS = list(set([
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-]
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+] + _extra_cors))
 
 # ---------------------------------------------------------------------------
 # CRM Seed Users — read from environment with safe fallback defaults
@@ -159,3 +163,50 @@ CRM_SEED_USERS = [
         'role':     'Sales',
     },
 ]
+
+# ---------------------------------------------------------------------------
+# Logging Configuration — Writes backend operational logs to logs/backend.log
+# ---------------------------------------------------------------------------
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] [{levelname}] [{name}] {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(LOGS_DIR / 'backend.log'),
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 5,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'crm': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

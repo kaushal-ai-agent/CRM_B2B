@@ -18,6 +18,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from agent_service.config.llm_factory import get_synthesis_llm
 from agent_service.config.settings import get_settings
 from agent_service.graph.state import AgentState
+from agent_service.db.audit_models import get_audit_session, PromptTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +124,19 @@ def _synthesis_inner(state: AgentState) -> dict[str, Any]:
 
     # Escalation
     if escalation and intent == "ESCALATION":
-        return _deterministic_response(_FALLBACK_ESCALATION, messages)
+        escalation_text = _FALLBACK_ESCALATION
+        session = get_audit_session()
+        try:
+            active_prompt = session.query(PromptTemplate).filter_by(
+                node_name="escalation_node", is_active=True
+            ).first()
+            if active_prompt and active_prompt.system_prompt:
+                escalation_text = active_prompt.system_prompt
+        except Exception as exc:
+            logger.error("Failed to fetch escalation prompt: %s", exc)
+        finally:
+            session.close()
+        return _deterministic_response(escalation_text, messages, state, "Escalation Triggered")
 
     # Product query but no data retrieved
     if intent in ("PRODUCT_STOCK_QUERY", "ORDERING_INTENT") and not retrieved:
@@ -131,12 +144,12 @@ def _synthesis_inner(state: AgentState) -> dict[str, Any]:
         tool_log = state.get("tool_call_log", [])
         has_errors = any("error" in tc for tc in tool_log)
         if has_errors:
-            return _deterministic_response(_FALLBACK_DB_ERROR, messages)
-        return _deterministic_response(_FALLBACK_NO_RESULTS, messages)
+            return _deterministic_response(_FALLBACK_DB_ERROR, messages, state, "Database Error")
+        return _deterministic_response(_FALLBACK_NO_RESULTS, messages, state, "Product Not Found")
 
     # General chat / FAQ — still use the LLM but without grounding data
     if intent in ("GENERAL_CHAT", "FAQ_QUERY") and not retrieved:
-        return _llm_response_no_data(messages, intent)
+        return _llm_response_no_data(state)
 
     # ── Grounded LLM synthesis ───────────────────────────────────────────
 
@@ -150,11 +163,31 @@ def _synthesis_inner(state: AgentState) -> dict[str, Any]:
             customer_msg = m.content
             break
 
-    prompt = _SYNTHESIS_SYSTEM_PROMPT.format(
+    # Fetch system prompt from DB
+    session = get_audit_session()
+    try:
+        active_prompt = session.query(PromptTemplate).filter_by(
+            node_name="synthesis_node", is_active=True
+        ).first()
+        system_prompt_template = active_prompt.system_prompt if active_prompt else _SYNTHESIS_SYSTEM_PROMPT
+    except Exception as exc:
+        logger.error("Failed to fetch synthesis prompt: %s", exc)
+        system_prompt_template = _SYNTHESIS_SYSTEM_PROMPT
+    finally:
+        session.close()
+
+    prompt = system_prompt_template.format(
         retrieved_data=safe_retrieved,
         alternatives_data=safe_alternatives,
         customer_message=customer_msg,
     )
+
+    import time
+    start_time = time.perf_counter()
+    llm = None
+    prompt_t = 0
+    completion_t = 0
+    reasoning_t = 0
 
     try:
         llm = get_synthesis_llm()
@@ -164,29 +197,115 @@ def _synthesis_inner(state: AgentState) -> dict[str, Any]:
         logger.error("Synthesis LLM failed: %s", exc)
         text = _FALLBACK_DB_ERROR
 
+    latency_ms = (time.perf_counter() - start_time) * 1000.0
+
+    token_usage = state.get("token_usage", {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "reasoning_tokens": 0,
+        "router_tokens": 0,
+        "synthesis_tokens": 0,
+    })
+    if 'response' in locals() and hasattr(response, 'response_metadata'):
+        usage_metadata = response.response_metadata.get("token_usage", {})
+        prompt_t = usage_metadata.get("prompt_tokens", 0)
+        completion_t = usage_metadata.get("completion_tokens", 0)
+        reasoning_t = (
+            usage_metadata.get("completion_tokens_details", {}).get("reasoning_tokens", 0)
+            or usage_metadata.get("reasoning_tokens", 0)
+        )
+        token_usage["prompt_tokens"] += prompt_t
+        token_usage["completion_tokens"] += completion_t
+        token_usage["reasoning_tokens"] += reasoning_t
+        token_usage["synthesis_tokens"] += (prompt_t + completion_t)
+
+    settings = get_settings()
+    model_name = getattr(llm, "model_name", None) or getattr(llm, "model", None) or getattr(settings, "SYNTHESIS_MODEL_NAME", "openai/gpt-4o-mini")
+
+    trace_step = {
+        "step": "synthesis",
+        "step_name": "Grounded Response Generation",
+        "node": "synthesis_node",
+        "type": "grounded_llm",
+        "model": str(model_name),
+        "system_prompt": prompt,
+        "injected_data": {
+            "retrieved_records": safe_retrieved,
+            "alternative_records": safe_alternatives,
+        },
+        "customer_message": customer_msg,
+        "raw_llm_output": text,
+        "latency_ms": round(latency_ms, 2),
+        "token_usage": {
+            "prompt_tokens": prompt_t,
+            "completion_tokens": completion_t,
+            "reasoning_tokens": reasoning_t,
+        },
+    }
+
+    execution_trace = list(state.get("execution_trace", [])) + [trace_step]
     messages.append(AIMessage(content=text))
-    return {"response_text": text, "messages": messages}
+    return {
+        "response_text": text,
+        "messages": messages,
+        "token_usage": token_usage,
+        "execution_trace": execution_trace,
+    }
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _deterministic_response(text: str, messages: list) -> dict[str, Any]:
+def _deterministic_response(text: str, messages: list, state: AgentState | None = None, reason: str = "Fallback") -> dict[str, Any]:
     messages = list(messages)
     messages.append(AIMessage(content=text))
-    return {"response_text": text, "messages": messages}
+    
+    trace_step = {
+        "step": "synthesis",
+        "step_name": f"Deterministic Response ({reason})",
+        "node": "synthesis_node",
+        "type": "deterministic",
+        "model": "rule_based_fallback",
+        "system_prompt": None,
+        "raw_llm_output": text,
+        "latency_ms": 0.0,
+        "token_usage": {"prompt_tokens": 0, "completion_tokens": 0, "reasoning_tokens": 0},
+    }
+    execution_trace = list(state.get("execution_trace", []) if state else []) + [trace_step]
+    return {"response_text": text, "messages": messages, "execution_trace": execution_trace}
 
 
-def _llm_response_no_data(messages: list, intent: str) -> dict[str, Any]:
+def _llm_response_no_data(state: AgentState) -> dict[str, Any]:
     """Handle general chat / FAQ without inventory data."""
-    system = (
+    messages = list(state.get("messages", []))
+    default_faq = (
         "You are a helpful B2B industrial-parts sales assistant. "
         "Answer general questions about shipping policies, payment terms, "
         "and company services. Be concise and professional. "
         "If the customer asks about specific product prices or stock, tell "
         "them you need a product name or SKU to look that up."
     )
+    system = default_faq
+    session = get_audit_session()
+    try:
+        active_prompt = session.query(PromptTemplate).filter_by(
+            node_name="faq_node", is_active=True
+        ).first()
+        if active_prompt and active_prompt.system_prompt:
+            system = active_prompt.system_prompt
+    except Exception as exc:
+        logger.error("Failed to fetch FAQ prompt: %s", exc)
+    finally:
+        session.close()
+
+    import time
+    start_time = time.perf_counter()
+    llm = None
+    prompt_t = 0
+    completion_t = 0
+    reasoning_t = 0
+
     try:
         llm = get_synthesis_llm()
         llm_messages = [SystemMessage(content=system)] + messages
@@ -196,9 +315,55 @@ def _llm_response_no_data(messages: list, intent: str) -> dict[str, Any]:
         logger.error("FAQ LLM failed: %s", exc)
         text = "I'd be happy to help! Could you please provide more details about what you're looking for?"
 
-    messages = list(messages)
+    latency_ms = (time.perf_counter() - start_time) * 1000.0
+
+    token_usage = state.get("token_usage", {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "reasoning_tokens": 0,
+        "router_tokens": 0,
+        "synthesis_tokens": 0,
+    })
+    if 'response' in locals() and hasattr(response, 'response_metadata'):
+        usage_metadata = response.response_metadata.get("token_usage", {})
+        prompt_t = usage_metadata.get("prompt_tokens", 0)
+        completion_t = usage_metadata.get("completion_tokens", 0)
+        reasoning_t = (
+            usage_metadata.get("completion_tokens_details", {}).get("reasoning_tokens", 0)
+            or usage_metadata.get("reasoning_tokens", 0)
+        )
+        token_usage["prompt_tokens"] += prompt_t
+        token_usage["completion_tokens"] += completion_t
+        token_usage["reasoning_tokens"] += reasoning_t
+        token_usage["synthesis_tokens"] += (prompt_t + completion_t)
+
+    settings = get_settings()
+    model_name = getattr(llm, "model_name", None) or getattr(llm, "model", None) or getattr(settings, "SYNTHESIS_MODEL_NAME", "openai/gpt-4o-mini")
+
+    trace_step = {
+        "step": "synthesis",
+        "step_name": "FAQ / General Conversation Synthesis",
+        "node": "synthesis_node",
+        "type": "faq_llm",
+        "model": str(model_name),
+        "system_prompt": system,
+        "raw_llm_output": text,
+        "latency_ms": round(latency_ms, 2),
+        "token_usage": {
+            "prompt_tokens": prompt_t,
+            "completion_tokens": completion_t,
+            "reasoning_tokens": reasoning_t,
+        },
+    }
+
+    execution_trace = list(state.get("execution_trace", [])) + [trace_step]
     messages.append(AIMessage(content=text))
-    return {"response_text": text, "messages": messages}
+    return {
+        "response_text": text,
+        "messages": messages,
+        "token_usage": token_usage,
+        "execution_trace": execution_trace,
+    }
 
 
 def _sanitise_for_prompt(records: list[dict]) -> str:

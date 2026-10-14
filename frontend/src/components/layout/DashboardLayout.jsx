@@ -10,6 +10,9 @@ import {
   Bot,
   Activity,
   ShieldCheck,
+  MessageCircle,
+  Target,
+  FileCode
 } from 'lucide-react';
 import SettingsModal from '../SettingsModal';
 
@@ -56,8 +59,17 @@ const DashboardLayout = () => {
               <NavLink to="/admin/agent-settings" className={navLinkClass}>
                 <Bot className="w-5 h-5" /> Agent Config
               </NavLink>
+              <NavLink to="/admin/agent-prompts" className={navLinkClass}>
+                <FileCode className="w-5 h-5" /> Prompt Studio
+              </NavLink>
               <NavLink to="/admin/agent-audit" className={navLinkClass}>
                 <Activity className="w-5 h-5" /> Observability
+              </NavLink>
+              <NavLink to="/admin/agent-eval" className={navLinkClass}>
+                <Target className="w-5 h-5" /> Evaluation
+              </NavLink>
+              <NavLink to="/admin/instagram-inbox" className={navLinkClass}>
+                <MessageCircle className="w-5 h-5" /> Instagram Inbox
               </NavLink>
             </>
           )}

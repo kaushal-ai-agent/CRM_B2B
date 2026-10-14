@@ -50,3 +50,9 @@ class AgentState(TypedDict, total=False):
 
     # ── Final response ───────────────────────────────────────────────────
     response_text: str
+
+    # ── Token Tracking ───────────────────────────────────────────────────
+    token_usage: dict[str, Any]
+
+    # ── Execution Lifecycle Trace (for Observability) ──────────────────────
+    execution_trace: list[dict[str, Any]]

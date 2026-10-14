@@ -402,9 +402,9 @@ export default function AgentAudit() {
               <tr>
                 {[
                   'Turn ID', 'Timestamp', 'Customer ID',
-                  'Intent', 'Confidence', 'Tokens (In/Out)', 'Est. Cost', 'Latency'
+                  'Intent', 'Confidence', 'Tokens (In/Out)', 'Est. Cost', 'Latency', 'Action'
                 ].map((col) => (
-                  <th key={col} className="px-4 py-3 font-semibold text-slate-300 uppercase tracking-wide">
+                  <th key={col} className={`px-4 py-3 font-semibold text-slate-300 uppercase tracking-wide ${col === 'Action' ? 'text-right' : ''}`}>
                     {col}
                   </th>
                 ))}
@@ -414,7 +414,7 @@ export default function AgentAudit() {
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    {Array.from({ length: 8 }).map((__, j) => (
+                    {Array.from({ length: 9 }).map((__, j) => (
                       <td key={j} className="px-4 py-3">
                         <div className="h-3 bg-slate-100 w-full" />
                       </td>
@@ -423,7 +423,7 @@ export default function AgentAudit() {
                 ))
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-slate-400">
+                  <td colSpan={9} className="px-4 py-12 text-center text-slate-400">
                     <MessageSquare size={24} className="mx-auto mb-2 text-slate-300" />
                     No audit logs found. Start chatting with the agent to generate logs.
                   </td>
@@ -488,6 +488,18 @@ export default function AgentAudit() {
                             {log.latency_ms.toFixed(0)} ms
                           </span>
                         ) : <span className="text-slate-400">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLog(log);
+                          }}
+                          className="inline-flex items-center gap-1 text-[#2563EB] hover:text-[#1D4ED8] font-semibold text-xs border border-[#2563EB]/30 hover:border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 px-2.5 py-1 transition-colors"
+                        >
+                          Inspect <ChevronRight size={12} />
+                        </button>
                       </td>
                     </tr>
                   );

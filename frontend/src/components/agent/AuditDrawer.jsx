@@ -20,11 +20,33 @@ import {
   Code2,
   Clock,
   Zap,
+  Settings,
+  Sparkles
 } from 'lucide-react';
+import MarkdownRenderer from '../MarkdownRenderer';
+import { agentClient } from '../../api/agentService';
+import ExecutionTraceViewer from './ExecutionTraceViewer';
 
 // ---------------------------------------------------------------------------
 // Helper components
 // ---------------------------------------------------------------------------
+
+function LatencyBar({ label, ms = 0, total = 1 }) {
+  const numMs = Number(ms) || 0;
+  const numTotal = Number(total) || 1;
+  const pct = numTotal > 0 ? Math.min(100, Math.round((numMs / numTotal) * 100)) : 0;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs font-mono">
+        <span className="text-slate-600 capitalize">{label}</span>
+        <span className="text-[#0F172A] font-semibold">{numMs.toFixed(0)} ms ({pct}%)</span>
+      </div>
+      <div className="h-1.5 bg-slate-100 border border-[#E0E0E0] overflow-hidden">
+        <div className="h-full bg-[#2563EB] transition-all duration-300" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
 
 function AccordionSection({ icon: Icon, title, defaultOpen = false, badge, children }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -185,17 +207,75 @@ function CitationCard({ citation, _index }) {
 }
 
 // ---------------------------------------------------------------------------
-// Latency visualization
+// Pricing Modal
 // ---------------------------------------------------------------------------
-function LatencyBar({ label, ms, total }) {
-  const pct = total > 0 ? Math.min(100, (ms / total) * 100) : 0;
+function PricingModal({ onClose }) {
+  const [modelName, setModelName] = useState('openai/gpt-4o-mini');
+  const [inputPrice, setInputPrice] = useState(0.15);
+  const [outputPrice, setOutputPrice] = useState(0.60);
+  const [thinkingPrice, setThinkingPrice] = useState(0.60);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    agentClient.get('/api/v1/agent/config/pricing').then(res => {
+      if (res.data.pricing && res.data.pricing.length > 0) {
+        const p = res.data.pricing[0];
+        setModelName(p.model_name);
+        setInputPrice(p.input_price_per_1m);
+        setOutputPrice(p.output_price_per_1m);
+        setThinkingPrice(p.thinking_price_per_1m);
+      }
+    }).catch(console.error);
+  }, []);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await agentClient.post('/api/v1/agent/config/pricing', {
+        model_name: modelName,
+        input_price_per_1m: inputPrice,
+        output_price_per_1m: outputPrice,
+        thinking_price_per_1m: thinkingPrice,
+        currency: 'USD'
+      });
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-slate-500 w-32 shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-slate-100 border border-[#E0E0E0]">
-        <div className="h-full bg-[#2563EB]" style={{ width: `${pct}%` }} />
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
+      <div className="bg-white border border-[#E0E0E0] w-[400px] shadow-2xl">
+        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-[#E0E0E0]">
+          <h3 className="text-sm font-semibold text-[#0F172A]">Configure Token Pricing</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+        </div>
+        <form onSubmit={handleSave} className="p-4 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Active Model</label>
+            <input value={modelName} onChange={e => setModelName(e.target.value)} className="w-full border border-[#E0E0E0] px-3 py-2 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Input Price / 1M Tokens (USD)</label>
+            <input type="number" step="0.001" value={inputPrice} onChange={e => setInputPrice(Number(e.target.value))} className="w-full border border-[#E0E0E0] px-3 py-2 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Output Price / 1M Tokens (USD)</label>
+            <input type="number" step="0.001" value={outputPrice} onChange={e => setOutputPrice(Number(e.target.value))} className="w-full border border-[#E0E0E0] px-3 py-2 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Thinking Price / 1M Tokens (USD)</label>
+            <input type="number" step="0.001" value={thinkingPrice} onChange={e => setThinkingPrice(Number(e.target.value))} className="w-full border border-[#E0E0E0] px-3 py-2 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none" />
+          </div>
+          <button type="submit" disabled={loading} className="w-full bg-[#2563EB] text-white px-4 py-2 text-sm font-medium hover:bg-[#1D4ED8] transition-colors">
+            {loading ? 'Saving...' : 'Save Configuration'}
+          </button>
+        </form>
       </div>
-      <span className="font-mono text-xs text-slate-700 w-16 text-right">{ms?.toFixed(0) ?? '—'} ms</span>
     </div>
   );
 }
@@ -206,6 +286,8 @@ function LatencyBar({ label, ms, total }) {
 
 export default function AuditDrawer({ log, onClose }) {
   const [visible, setVisible] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('trace'); // 'trace' | 'overview'
 
   useEffect(() => {
     // Animate in
@@ -301,33 +383,68 @@ export default function AuditDrawer({ log, onClose }) {
           )}
         </div>
 
+        {/* View Mode Tabs */}
+        <div className="flex border-b border-[#E0E0E0] bg-white px-6 shrink-0">
+          <button
+            onClick={() => setActiveTab('trace')}
+            className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
+              activeTab === 'trace'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-slate-500 hover:text-[#0F172A]'
+            }`}
+          >
+            <Sparkles size={13} />
+            Step-by-Step Execution Trace
+          </button>
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`py-2.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
+              activeTab === 'overview'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-slate-500 hover:text-[#0F172A]'
+            }`}
+          >
+            <BarChart2 size={13} />
+            Turn Details & Telemetry
+          </button>
+        </div>
+
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
-
-          {/* 1. Input */}
-          <AccordionSection icon={MessageSquare} title="Input — Customer Query" defaultOpen>
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Original Query</p>
-                <div className="border border-[#E0E0E0] bg-slate-50 p-4 text-sm text-[#0F172A]">
-                  {log.inbound_query || <span className="italic text-slate-400">Not recorded</span>}
-                </div>
-              </div>
-              {log.sanitized_input && log.sanitized_input !== log.inbound_query && (
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Sanitized Input
-                    <span className="ml-2 text-amber-600 font-normal normal-case">(modified by guardrails)</span>
-                  </p>
-                  <div className="border border-amber-200 bg-amber-50 p-4 text-sm text-[#0F172A]">
-                    {log.sanitized_input}
+          {activeTab === 'trace' ? (
+            <ExecutionTraceViewer
+              executionTrace={log.execution_trace}
+              toolCalls={toolCalls}
+              fallbackQuery={log.inbound_query}
+              fallbackResponse={log.grounded_response}
+              fallbackIntent={log.router_classification}
+            />
+          ) : (
+            <>
+              {/* 1. Input */}
+              <AccordionSection icon={MessageSquare} title="Input — Customer Query" defaultOpen>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Original Query</p>
+                    <div className="border border-[#E0E0E0] bg-slate-50 p-4 text-sm text-[#0F172A]">
+                      {log.inbound_query || <span className="italic text-slate-400">Not recorded</span>}
+                    </div>
                   </div>
+                  {log.sanitized_input && log.sanitized_input !== log.inbound_query && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                        Sanitized Input
+                        <span className="ml-2 text-amber-600 font-normal normal-case">(modified by guardrails)</span>
+                      </p>
+                      <div className="border border-amber-200 bg-amber-50 p-4 text-sm text-[#0F172A]">
+                        {log.sanitized_input}
+                      </div>
+                    </div>
+                  )}
+                  <MetaRow label="Session ID" value={log.session_id} mono />
+                  <MetaRow label="Timestamp" value={log.timestamp ? new Date(log.timestamp).toLocaleString() : '—'} mono />
                 </div>
-              )}
-              <MetaRow label="Session ID" value={log.session_id} mono />
-              <MetaRow label="Timestamp" value={log.timestamp ? new Date(log.timestamp).toLocaleString() : '—'} mono />
-            </div>
-          </AccordionSection>
+              </AccordionSection>
 
           {/* 2. Routing */}
           <AccordionSection icon={Compass} title="Routing — Intent Classification" defaultOpen>
@@ -373,8 +490,8 @@ export default function AuditDrawer({ log, onClose }) {
 
           {/* 4. Output */}
           <AccordionSection icon={FileText} title="Synthesized Response" defaultOpen>
-            <div className="border border-[#E0E0E0] bg-slate-50 p-4 text-sm text-[#0F172A] whitespace-pre-wrap leading-relaxed">
-              {log.grounded_response || <span className="italic text-slate-400">No response recorded</span>}
+            <div className="border border-[#E0E0E0] bg-slate-50 p-4 text-[#0F172A] leading-relaxed">
+              {log.grounded_response ? <MarkdownRenderer content={log.grounded_response} /> : <span className="italic text-slate-400">No response recorded</span>}
             </div>
           </AccordionSection>
 
@@ -415,14 +532,39 @@ export default function AuditDrawer({ log, onClose }) {
               {/* Token usage */}
               {Object.keys(tokenUsage).length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Token Usage</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {Object.entries(tokenUsage).map(([k, v]) => (
-                      <div key={k} className="border border-[#E0E0E0] bg-slate-50 p-3">
-                        <p className="text-xs text-slate-500 uppercase tracking-wide">{k.replace(/_/g, ' ')}</p>
-                        <p className="font-mono text-lg font-bold text-[#0F172A] mt-1">{v?.toLocaleString()}</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Token Usage & Cost</p>
+                    <button 
+                      onClick={() => setPricingOpen(true)}
+                      className="text-[#2563EB] hover:underline text-xs flex items-center gap-1 font-semibold"
+                    >
+                      <Settings size={12} /> Configure Token Pricing
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="border border-[#E0E0E0] bg-slate-50 p-3">
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Input Tokens</p>
+                      <p className="font-mono text-lg font-bold text-[#0F172A] mt-1">{(tokenUsage.prompt_tokens || 0).toLocaleString()}</p>
+                    </div>
+                    <div className="border border-[#E0E0E0] bg-slate-50 p-3">
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Output Tokens</p>
+                      <p className="font-mono text-lg font-bold text-[#0F172A] mt-1">{((tokenUsage.completion_tokens || 0) - (tokenUsage.reasoning_tokens || 0)).toLocaleString()}</p>
+                    </div>
+                    <div className="border border-[#E0E0E0] bg-slate-50 p-3">
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Thinking Tokens</p>
+                      <p className="font-mono text-lg font-bold text-[#0F172A] mt-1">{(tokenUsage.reasoning_tokens || 0).toLocaleString()}</p>
+                    </div>
+                    <div className="border border-[#E0E0E0] bg-[#F8FAFC] p-3 relative group">
+                      <p className="text-[10px] font-semibold text-[#2563EB] uppercase tracking-wide flex items-center gap-1">
+                        Turn Cost <AlertTriangle size={10}/>
+                      </p>
+                      <p className="font-mono text-lg font-bold text-[#0F172A] mt-1">
+                        ${(tokenUsage.total_cost || 0).toFixed(5)}
+                      </p>
+                      <div className="absolute hidden group-hover:block bottom-full mb-2 right-0 bg-[#0F172A] text-white text-[10px] p-2 rounded shadow-lg w-48 z-10 font-mono">
+                        Cost = (Input * InRate) + (Output * OutRate) + (Thinking * ThinkRate)
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -434,9 +576,11 @@ export default function AuditDrawer({ log, onClose }) {
               </div>
             </div>
           </AccordionSection>
-
+            </>
+          )}
         </div>
       </div>
+      {pricingOpen && <PricingModal onClose={() => setPricingOpen(false)} />}
     </>
   );
 }

@@ -9,7 +9,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-from agent_service.db.audit_models import AuditLog, get_audit_session
+from agent_service.db.audit_models import AuditLog, ModelPricingConfig, get_audit_session
 from agent_service.db.adapter import DatabaseAdapter
 from agent_service.config.settings import get_settings
 
@@ -27,6 +27,7 @@ def write_audit_log(
     citations: list[dict[str, Any]] | None,
     latency_ms: float | None,
     token_usage: dict[str, int] | None,
+    execution_trace: list[dict[str, Any]] | None = None,
 ) -> str:
     """
     Write a single audit log row and return its ID.
@@ -35,6 +36,20 @@ def write_audit_log(
     """
     session = get_audit_session()
     try:
+        # Calculate cost
+        if token_usage:
+            pricing = session.query(ModelPricingConfig).first()
+            if pricing:
+                p_tokens = token_usage.get("prompt_tokens", 0)
+                c_tokens = token_usage.get("completion_tokens", 0)
+                r_tokens = token_usage.get("reasoning_tokens", 0)
+                
+                cost = (p_tokens * pricing.input_price_per_1m / 1000000) + \
+                       ((c_tokens - r_tokens) * pricing.output_price_per_1m / 1000000) + \
+                       (r_tokens * pricing.thinking_price_per_1m / 1000000)
+                token_usage["total_cost"] = cost
+                token_usage["currency"] = pricing.currency
+
         log = AuditLog(
             turn_id=turn_id,
             session_id=session_id,
@@ -49,10 +64,20 @@ def write_audit_log(
             citations=citations,
             latency_ms=latency_ms,
             token_usage=token_usage,
+            execution_trace=execution_trace,
         )
-        session.add(log)
-        session.commit()
-        return log.id
+
+        for attempt in range(3):
+            try:
+                session.add(log)
+                session.commit()
+                return log.id
+            except Exception as e:
+                session.rollback()
+                if "database is locked" in str(e).lower() and attempt < 2:
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                raise
     except Exception:
         session.rollback()
         raise
@@ -124,13 +149,53 @@ def fetch_audit_logs(
         query = query.order_by(AuditLog.timestamp.desc())
         query = query.offset(offset).limit(limit)
 
+        logs = query.all()
+        
+        # Build set of unique customer IDs and IG session IDs
+        cust_ids = set()
+        ig_sids = set()
+        for log in logs:
+            if log.customer_id:
+                cust_ids.add(log.customer_id)
+            if log.session_id and log.session_id.startswith("ig_"):
+                ig_sids.add(log.session_id.replace("ig_", ""))
+                
+        # Resolve names using CRM DB
+        customer_names = {}
+        ig_usernames = {}
+        
+        try:
+            from agent_service.channels.instagram_client import _ensure_django
+            _ensure_django()
+            from crm.models import Customer, InstagramCustomerLink
+            
+            if cust_ids:
+                customers = Customer.objects.filter(id__in=cust_ids)
+                customer_names = {str(c.id): c.company_name for c in customers}
+                
+            if ig_sids:
+                links = InstagramCustomerLink.objects.filter(instagram_id__in=ig_sids)
+                ig_usernames = {link.instagram_id: link.instagram_username for link in links if link.instagram_username}
+        except Exception as e:
+            # Safe fallback if django resolution fails
+            import logging
+            logging.getLogger(__name__).warning("Failed to resolve CRM names for audit logs: %s", e)
+
         results = []
-        for log in query.all():
+        for log in logs:
+            customer_name = customer_names.get(str(log.customer_id)) if log.customer_id else None
+            ig_username = None
+            if log.session_id and log.session_id.startswith("ig_"):
+                igsid = log.session_id.replace("ig_", "")
+                ig_username = ig_usernames.get(igsid)
+                
             results.append({
                 "id": log.id,
                 "turn_id": log.turn_id,
                 "session_id": log.session_id,
                 "customer_id": log.customer_id,
+                "customer_name": customer_name,
+                "instagram_username": ig_username,
                 "timestamp": log.timestamp.isoformat() if log.timestamp else None,
                 "inbound_query": log.inbound_query,
                 "sanitized_input": log.sanitized_input,
@@ -141,6 +206,7 @@ def fetch_audit_logs(
                 "citations": log.citations,
                 "latency_ms": log.latency_ms,
                 "token_usage": log.token_usage,
+                "execution_trace": log.execution_trace,
             })
         return results
     finally:

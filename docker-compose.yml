@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.django
+    container_name: crm_b2b_django
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -13,12 +15,15 @@ services:
       - DJANGO_DEBUG=True
       - AGENT_SERVICE_URL=http://agent_service:8001
       - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
-    # In production, replace sqlite with postgres and add db service dependency
-    
+    env_file:
+      - .env
+
   agent_service:
     build:
       context: .
       dockerfile: Dockerfile.agent
+    container_name: crm_b2b_agent
+    restart: unless-stopped
     ports:
       - "8001:8001"
     volumes:
@@ -26,18 +31,25 @@ services:
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - CRM_API_URL=http://crm_backend:8000
+      - CRM_DATABASE_URL=sqlite:////app/db.sqlite3
+      - AUDIT_DATABASE_URL=sqlite:////app/agent_service/agent_audit.db
       - IG_ENABLED=${IG_ENABLED:-false}
-      - IG_VERIFY_TOKEN=${IG_VERIFY_TOKEN}
-      - IG_ACCESS_TOKEN=${IG_ACCESS_TOKEN}
-      - IG_APP_ID=${IG_APP_ID}
-      - IG_APP_SECRET=${IG_APP_SECRET}
-      - IG_ACCOUNT_ID=${IG_ACCOUNT_ID}
+    env_file:
+      - .env
+    depends_on:
+      - crm_backend
 
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
       args:
         VITE_API_URL: http://localhost:8000/api/v1
         VITE_AGENT_API_URL: http://localhost:8001
+    container_name: crm_b2b_frontend
+    restart: unless-stopped
     ports:
       - "3000:80"
+    depends_on:
+      - crm_backend
+      - agent_service

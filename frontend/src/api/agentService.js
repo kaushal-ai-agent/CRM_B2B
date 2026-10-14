@@ -4,6 +4,7 @@
  */
 
 import axios from 'axios';
+import logger from '../utils/logger';
 
 const AGENT_BASE = import.meta.env.VITE_AGENT_API_BASE || 'http://localhost:8100';
 
@@ -12,6 +13,19 @@ export const agentClient = axios.create({
   timeout: 60000, // LLM calls can be slow
   headers: { 'Content-Type': 'application/json' },
 });
+
+agentClient.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    logger.error('Agent API Error', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      detail: error.response?.data?.detail || error.message,
+    });
+    return Promise.reject(error);
+  }
+);
 
 // ---------------------------------------------------------------------------
 // Chat
@@ -133,6 +147,74 @@ export const deleteFaq = async (faqId) => {
  */
 export const verifyInstagramConnection = async () => {
   const res = await agentClient.get('/api/v1/agent/instagram/verify');
+  return res.data;
+};
+
+// ---------------------------------------------------------------------------
+// Evaluation & Dataset
+// ---------------------------------------------------------------------------
+
+export const fetchGoldenDataset = async (datasetTag = null) => {
+  const res = await agentClient.get('/api/v1/agent/eval/dataset', { params: { dataset_tag: datasetTag } });
+  return res.data;
+};
+
+export const createGoldenTestCase = async (data) => {
+  const res = await agentClient.post('/api/v1/agent/eval/dataset', data);
+  return res.data;
+};
+
+export const updateGoldenTestCase = async (id, data) => {
+  const res = await agentClient.put(`/api/v1/agent/eval/dataset/${id}`, data);
+  return res.data;
+};
+
+export const deleteGoldenTestCase = async (id) => {
+  const res = await agentClient.delete(`/api/v1/agent/eval/dataset/${id}`);
+  return res.data;
+};
+
+export const runEvalSuite = async () => {
+  const res = await agentClient.post('/api/v1/agent/eval/run', {}, { timeout: 300000 });
+  return res.data;
+};
+
+export const fetchEvalRuns = async () => {
+  const res = await agentClient.get('/api/v1/agent/eval/runs');
+  return res.data;
+};
+
+export const fetchEvalRunDetails = async (versionTag) => {
+  const res = await agentClient.get(`/api/v1/agent/eval/runs/${versionTag}`);
+  return res.data;
+};
+
+export const seedGoldenDataset = async () => {
+  const res = await agentClient.post('/api/v1/agent/eval/dataset/seed');
+  return res.data;
+};
+
+// ---------------------------------------------------------------------------
+// Prompt Studio
+// ---------------------------------------------------------------------------
+
+export const fetchPrompts = async () => {
+  const res = await agentClient.get('/api/v1/agent/prompts');
+  return res.data;
+};
+
+export const seedPrompts = async () => {
+  const res = await agentClient.post('/api/v1/agent/prompts/seed');
+  return res.data;
+};
+
+export const createPrompt = async (data) => {
+  const res = await agentClient.post('/api/v1/agent/prompts', data);
+  return res.data;
+};
+
+export const rollbackPrompt = async (id) => {
+  const res = await agentClient.post('/api/v1/agent/prompts/rollback', { id });
   return res.data;
 };
 

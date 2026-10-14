@@ -16,7 +16,32 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
 
 from agent_service.config.settings import get_settings
 
+import os
+from pathlib import Path
+
+# Set up extensive file logging
+log_dir = Path(__file__).resolve().parent.parent.parent.parent / "logs"
+os.makedirs(log_dir, exist_ok=True)
+log_file = log_dir / "instagram_webhook.log"
+
+# Configure logger specifically for this module
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+if not logger.handlers:
+    # File handler
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.DEBUG)
+    file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
+    file_handler.setFormatter(file_formatter)
+    logger.addHandler(file_handler)
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_formatter = logging.Formatter('%(levelname)s:     [Instagram Webhook] %(message)s')
+    console_handler.setFormatter(console_formatter)
+    logger.addHandler(console_handler)
 
 router = APIRouter(tags=["instagram"])
 
@@ -31,16 +56,22 @@ async def verify_webhook(request: Request) -> Response:
     Verify the webhook subscription with Meta.
     Meta sends hub.mode, hub.verify_token, hub.challenge as query params.
     """
+    logger.debug("Received GET request for Webhook Verification")
+    logger.debug("Query Params: %s", request.query_params)
+    
     settings = get_settings()
     mode = request.query_params.get("hub.mode")
     token = request.query_params.get("hub.verify_token")
     challenge = request.query_params.get("hub.challenge")
 
+    logger.debug("Parsed Mode: %s, Token: %s, Challenge: %s", mode, token, challenge)
+    logger.debug("Expected Token: %s", settings.IG_VERIFY_TOKEN)
+
     if mode == "subscribe" and token == settings.IG_VERIFY_TOKEN:
-        logger.info("Instagram webhook verified successfully.")
+        logger.info("Instagram webhook verified successfully. Returning challenge: %s", challenge)
         return Response(content=challenge, media_type="text/plain")
 
-    logger.warning("Instagram webhook verification failed: mode=%s", mode)
+    logger.error("Instagram webhook verification failed! Expected Token: %s, Received Token: %s, Mode: %s", settings.IG_VERIFY_TOKEN, token, mode)
     raise HTTPException(status_code=403, detail="Verification failed")
 
 
@@ -59,14 +90,21 @@ async def receive_webhook(
     """
     settings = get_settings()
     raw_body = await request.body()
+    
+    logger.debug("--- [WEBHOOK POST RECEIVED] ---")
+    logger.debug(f"Headers: {request.headers}")
+    logger.debug(f"Raw Body: {raw_body.decode('utf-8')}")
 
     # Verify signature
     signature_header = request.headers.get("X-Hub-Signature-256", "")
+    logger.debug(f"Received Signature: {signature_header}")
+    
     if not _verify_signature(raw_body, signature_header, settings.IG_APP_SECRET):
         logger.warning("Instagram webhook: invalid signature")
         raise HTTPException(status_code=403, detail="Invalid signature")
 
     payload = await request.json()
+    logger.debug(f"Parsed JSON Payload: {payload}")
 
     # Quick 200 to prevent Meta retries (must respond within 20s)
     background_tasks.add_task(_process_instagram_events, payload)
@@ -156,7 +194,9 @@ async def _handle_messaging_event(event: dict[str, Any]) -> None:
     # Route through the agent pipeline
     try:
         from agent_service.channels.instagram_client import handle_instagram_dm
-        await handle_instagram_dm(sender_id, message_text)
+        # Extract mid if it exists for username fetching
+        mid = message.get("mid")
+        await handle_instagram_dm(sender_id, message_text, mid=mid)
     except Exception as exc:
         logger.exception("Failed to process Instagram DM from %s: %s", sender_id, exc)
         # Fail-safe: attempt to send fallback message

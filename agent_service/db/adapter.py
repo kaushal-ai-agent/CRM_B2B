@@ -49,6 +49,7 @@ class DatabaseAdapter:
         connect_args: dict[str, Any] = {}
         if url.startswith("sqlite"):
             connect_args["check_same_thread"] = False
+            connect_args["timeout"] = 30.0
         self._engine: Engine = create_engine(
             url,
             connect_args=connect_args,

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from crm.views import CustomerViewSet, write_frontend_logs, dashboard_analytics_v2
+from crm.views import CustomerViewSet, write_frontend_logs, get_last_event_view, dashboard_analytics_v2
 from crm.analytics_views import dashboard_kpis, dashboard_aging, dashboard_products, analytics_geo, analytics_pareto
 from crm.config_views import system_config_view
 from crm.auth_views import login_view, users_view, user_detail_view
@@ -17,6 +17,7 @@ router.register(r'api/v1/customers', CustomerViewSet, basename='customer')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/debug/frontend-logs/', write_frontend_logs, name='frontend-logs'),
+    path('api/v1/debug/last-event/', get_last_event_view, name='last-event'),
 
     # Health
     path('api/v1/health/', health_check, name='health-check'),

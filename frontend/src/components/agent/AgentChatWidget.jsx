@@ -20,6 +20,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { sendChatMessage, getAgentError } from '../../api/agentService';
+import MarkdownRenderer from '../MarkdownRenderer';
 
 // ---------------------------------------------------------------------------
 // Intent badge (small)
@@ -123,8 +124,8 @@ function MessageBubble({ msg }) {
           )}
 
           {/* Response text */}
-          <div className="border border-[#E0E0E0] bg-white px-4 py-3 text-sm text-[#0F172A] leading-relaxed whitespace-pre-wrap">
-            {msg.content}
+          <div className="border border-[#E0E0E0] bg-white px-4 py-3 text-[#0F172A] leading-relaxed">
+            <MarkdownRenderer content={msg.content} />
           </div>
 
           {/* Citations */}

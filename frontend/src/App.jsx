@@ -10,6 +10,9 @@ import AgentSettings from './pages/AgentSettings';
 import AgentAudit from './pages/AgentAudit';
 import TeamManagement from './pages/TeamManagement';
 import OrdersDashboard from './pages/OrdersDashboard';
+import InstagramInbox from './pages/InstagramInbox';
+import AgentEvalDashboard from './pages/AgentEvalDashboard';
+import PromptStudio from './pages/PromptStudio';
 
 // ---------------------------------------------------------------------------
 // Route guard — redirects to /login if not authenticated
@@ -58,8 +61,20 @@ export default function App() {
             element={<RequireOwner><AgentSettings /></RequireOwner>}
           />
           <Route
+            path="/admin/agent-prompts"
+            element={<RequireOwner><PromptStudio /></RequireOwner>}
+          />
+          <Route
             path="/admin/agent-audit"
             element={<RequireOwner><AgentAudit /></RequireOwner>}
+          />
+          <Route
+            path="/admin/agent-eval"
+            element={<RequireOwner><AgentEvalDashboard /></RequireOwner>}
+          />
+          <Route
+            path="/admin/instagram-inbox"
+            element={<RequireOwner><InstagramInbox /></RequireOwner>}
           />
           <Route
             path="/admin/team"

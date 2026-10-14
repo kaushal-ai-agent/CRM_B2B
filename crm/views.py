@@ -74,27 +74,56 @@ class CustomerViewSet(viewsets.ReadOnlyModelViewSet):
         return CustomerListSerializer
 
 
+from .logging_utils import record_last_event, get_last_event
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def write_frontend_logs(request):
-    """Append capped browser diagnostics locally while Django runs in DEBUG mode."""
-    if not settings.DEBUG:
-        raise Http404
+    """
+    Append frontend events (clicks, tabs, uncaught errors, API failures)
+    to logs/frontend.log and update logs/last_event.json.
+    """
+    data = request.data
+    events = data.get('events', []) if isinstance(data, dict) else data
 
-    events = request.data.get('events', [])
-    if not isinstance(events, list):
-        return Response({'detail': 'events must be a list'}, status=status.HTTP_400_BAD_REQUEST)
+    if isinstance(events, dict):
+        events = [events]
+    elif not isinstance(events, list):
+        return Response({'detail': 'events must be a list or dict'}, status=status.HTTP_400_BAD_REQUEST)
 
-    safe_events = events[:50]
+    safe_events = events[:100]
     log_directory = settings.BASE_DIR / 'logs'
     log_directory.mkdir(exist_ok=True)
     log_path = log_directory / 'frontend.log'
 
     with log_path.open('a', encoding='utf-8') as log_file:
         for event in safe_events:
+            if not isinstance(event, dict):
+                continue
+            if 'timestamp' not in event:
+                event['timestamp'] = timezone.now().isoformat()
+            
             log_file.write(json.dumps(event, ensure_ascii=False, default=str) + '\n')
 
+            # Update the latest event tracker with the last item
+            record_last_event(
+                source="frontend",
+                level=str(event.get('level', 'INFO')),
+                message=str(event.get('message', 'Frontend Event')),
+                payload=event.get('payload', {}),
+                path=event.get('path', '/'),
+                timestamp=event.get('timestamp'),
+            )
+
     return Response({'accepted': len(safe_events)}, status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_last_event_view(request):
+    """Return what happened lastly across the platform from logs/last_event.json."""
+    return Response(get_last_event(), status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

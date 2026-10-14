@@ -20,6 +20,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.graph import END, StateGraph
 
 from agent_service.config.settings import get_settings
+from agent_service.db.audit_models import get_audit_session, PromptTemplate
 from agent_service.graph.guardrails import check_input
 from agent_service.graph.nodes.audit_node import audit_node
 from agent_service.graph.nodes.router_node import router_node
@@ -54,14 +55,27 @@ def ingestion_node(state: AgentState) -> dict[str, Any]:
 
     if not result.is_safe:
         logger.warning("Input guardrail triggered: %s", result.reason)
+        guardrail_msg = (
+            "I can only assist with product enquiries, stock availability, "
+            "and order-related questions. I'm not able to modify prices or "
+            "bypass our catalogue policies."
+        )
+        session = get_audit_session()
+        try:
+            active_prompt = session.query(PromptTemplate).filter_by(
+                node_name="guardrail_node", is_active=True
+            ).first()
+            if active_prompt and active_prompt.system_prompt:
+                guardrail_msg = active_prompt.system_prompt
+        except Exception as exc:
+            logger.error("Failed to fetch guardrail prompt: %s", exc)
+        finally:
+            session.close()
+
         return {
             "escalation_flag": True,
             "intent": "ESCALATION",
-            "response_text": (
-                "I can only assist with product enquiries, stock availability, "
-                "and order-related questions. I'm not able to modify prices or "
-                "bypass our catalogue policies."
-            ),
+            "response_text": guardrail_msg,
             "turn_start_time": time.perf_counter(),
         }
 

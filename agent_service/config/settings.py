@@ -31,7 +31,7 @@ class AgentSettings(BaseSettings):
     )
 
     # ── OpenRouter LLM Provider ──────────────────────────────────────────
-    OPENROUTER_API_KEY: str = "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"
+    OPENROUTER_API_KEY: str
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
     # Fast / cheap model for intent classification
@@ -68,12 +68,12 @@ class AgentSettings(BaseSettings):
 
     # ── Instagram Channel ────────────────────────────────────────────────
     IG_ENABLED: bool = False
-    IG_APP_ID: str = ""
-    IG_APP_SECRET: str = ""
-    IG_VERIFY_TOKEN: str = ""
-    IG_ACCESS_TOKEN: str = ""
-    IG_ACCOUNT_ID: str = ""
-    IG_API_BASE_URL: str = "https://graph.facebook.com"
+    IG_APP_ID: str
+    IG_APP_SECRET: str
+    IG_VERIFY_TOKEN: str
+    IG_ACCESS_TOKEN: str
+    IG_ACCOUNT_ID: str
+    IG_API_BASE_URL: str = "https://graph.instagram.com"
     IG_API_VERSION: str = "v22.0"
     IG_ONBOARDING_REQUIRED: bool = True
 

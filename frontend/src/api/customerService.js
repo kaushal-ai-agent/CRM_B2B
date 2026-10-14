@@ -1,4 +1,5 @@
 import axios from 'axios';
+import logger from '../utils/logger';
 
 const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api/v1/';
 const BASE_URL = BASE.endsWith('/') ? BASE : `${BASE}/`;
@@ -10,6 +11,19 @@ const client = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
 });
+
+client.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    logger.error('CRM API Error', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      detail: error.response?.data?.detail || error.message,
+    });
+    return Promise.reject(error);
+  }
+);
 
 export const fetchCustomers = async (params = {}) => {
   try {
@@ -46,6 +60,19 @@ authClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+authClient.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    logger.error('CRM Authenticated API Error', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      detail: error.response?.data?.detail || error.message,
+    });
+    return Promise.reject(error);
+  }
+);
 
 // ---------------------------------------------------------------------------
 // Auth API

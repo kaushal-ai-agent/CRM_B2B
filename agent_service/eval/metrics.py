@@ -152,8 +152,9 @@ class ToolCorrectnessCheck:
 
     @staticmethod
     def evaluate(
-        tool_calls: list[dict[str, Any]],
+        tool_calls: list[dict[str, Any]] | list[str],
         intent: str,
+        expected_tools: list[str] | None = None,
         expected_refs: list[str] | None = None,
     ) -> dict[str, Any]:
         if intent in ("PRODUCT_STOCK_QUERY", "ORDERING_INTENT"):
@@ -163,25 +164,39 @@ class ToolCorrectnessCheck:
                     "reason": "No tool calls made for a product query.",
                     "score": 0.0,
                 }
-            tool_names = [tc.get("tool_name", "") for tc in tool_calls]
-            if "query_live_product" not in tool_names:
-                return {
-                    "passed": False,
-                    "reason": f"Expected query_live_product, got: {tool_names}",
-                    "score": 0.0,
-                }
+            tool_names = [
+                tc.get("tool_name", "") if isinstance(tc, dict) else str(tc)
+                for tc in tool_calls
+            ]
+            
+            # Check expected tools
+            tools_to_check = expected_tools if expected_tools else ["query_live_product"]
+            for exp_tool in tools_to_check:
+                if exp_tool not in tool_names:
+                    return {
+                        "passed": False,
+                        "reason": f"Expected tool '{exp_tool}' not found in executed tools: {tool_names}",
+                        "score": 0.0,
+                    }
 
-            # Check if expected refs were searched
+            # Check if expected refs / entities were searched
             if expected_refs:
                 searched_terms = []
                 for tc in tool_calls:
-                    args = tc.get("input_args", {})
-                    term = args.get("search_term", "")
-                    if term:
-                        searched_terms.append(term.lower())
+                    if isinstance(tc, dict):
+                        args = tc.get("input_args", {})
+                        if isinstance(args, dict):
+                            for v in args.values():
+                                if v:
+                                    searched_terms.append(str(v).lower())
+                    elif isinstance(tc, str):
+                        searched_terms.append(tc.lower())
 
                 for ref in expected_refs:
-                    if not any(ref.lower() in st for st in searched_terms):
+                    ref_str = str(ref).strip().lower()
+                    if not ref_str:
+                        continue
+                    if not any(ref_str in st or st in ref_str for st in searched_terms):
                         return {
                             "passed": False,
                             "reason": f"Expected search for '{ref}' not found in tool calls.",

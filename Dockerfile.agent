@@ -2,13 +2,22 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
 WORKDIR /app
 
-# The agent service shares dependencies with the django app in this monorepo setup
-# or has its own dependencies in pyproject.toml / uv.lock.
-COPY requirements.txt /app/
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# Install system build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install shared and agent service dependencies
+COPY requirements.txt /app/requirements.txt
+COPY agent_service/requirements.txt /app/agent_requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install -r agent_requirements.txt
 
 # Copy everything
 COPY . /app/
@@ -16,5 +25,5 @@ COPY . /app/
 # Expose FastAPI port
 EXPOSE 8001
 
-# Run Uvicorn directly
-CMD ["uvicorn", "agent_service.app:app", "--host", "0.0.0.0", "--port", "8001"]
+# Run Uvicorn production server
+CMD ["uvicorn", "agent_service.app:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]

@@ -61,7 +61,7 @@ def _ensure_django() -> None:
 # Customer identity resolution
 # ---------------------------------------------------------------------------
 
-def _resolve_customer(igsid: str) -> Optional[dict]:
+def _resolve_customer(igsid: str, mid: str | None = None) -> Optional[dict]:
     """
     Resolve an Instagram-scoped ID to a CRM customer.
     Returns dict with customer details or None if not found.
@@ -73,6 +73,13 @@ def _resolve_customer(igsid: str) -> Optional[dict]:
         link = InstagramCustomerLink.objects.select_related('customer').get(
             instagram_id=igsid
         )
+        # Fetch username if we don't have it yet and mid is available
+        if not link.instagram_username and mid:
+            username = _fetch_instagram_username(mid)
+            if username:
+                link.instagram_username = username
+                link.save(update_fields=['instagram_username'])
+
         customer = link.customer
         return {
             'id': str(customer.id),
@@ -81,6 +88,7 @@ def _resolve_customer(igsid: str) -> Optional[dict]:
             'whatsapp_number': customer.whatsapp_number,
             'phone_number': link.phone_number,
             'profile_complete': bool(customer.contact_person and customer.whatsapp_number),
+            'instagram_username': link.instagram_username,
         }
     except InstagramCustomerLink.DoesNotExist:
         return None
@@ -90,6 +98,7 @@ def _create_customer_from_instagram(
     igsid: str,
     name: str,
     phone: str,
+    mid: str | None = None,
 ) -> dict:
     """
     Create a new CRM customer linked to an Instagram ID.
@@ -98,18 +107,25 @@ def _create_customer_from_instagram(
     _ensure_django()
     from crm.models import Customer, InstagramCustomerLink
 
+    # Fetch username if possible
+    username = _fetch_instagram_username(mid) if mid else None
+
     # Check if customer with this phone already exists (cross-channel merge)
     existing = Customer.objects.filter(whatsapp_number=phone).first()
 
     if existing:
         # Link existing customer to Instagram
-        InstagramCustomerLink.objects.update_or_create(
+        link, _ = InstagramCustomerLink.objects.update_or_create(
             phone_number=phone,
             defaults={
                 'instagram_id': igsid,
                 'customer': existing,
             }
         )
+        if username and link.instagram_username != username:
+            link.instagram_username = username
+            link.save(update_fields=['instagram_username'])
+        
         return {
             'id': str(existing.id),
             'company_name': existing.company_name,
@@ -134,6 +150,7 @@ def _create_customer_from_instagram(
             phone_number=phone,
             instagram_id=igsid,
             customer=customer,
+            instagram_username=username,
         )
         return {
             'id': str(customer.id),
@@ -142,6 +159,38 @@ def _create_customer_from_instagram(
             'whatsapp_number': phone,
             'profile_complete': True,
         }
+
+
+def _fetch_instagram_username(mid: str) -> str | None:
+    """Fetch sender username using the message ID."""
+    import requests
+    settings = get_settings()
+    if not settings.IG_ACCESS_TOKEN or not mid:
+        return None
+    try:
+        # GET https://graph.instagram.com/{VERSION}/{mid}?fields=from&access_token={IG_ACCESS_TOKEN}
+        # Based on Meta Graph API documentation
+        url = f"{settings.IG_API_BASE_URL}/{settings.IG_API_VERSION}/{mid}"
+        params = {
+            "fields": "from",
+            "access_token": settings.IG_ACCESS_TOKEN
+        }
+        
+        logger.debug(f"[Graph API] Fetching username for mid={mid}")
+        logger.debug(f"[Graph API] Request URL: {url}?fields=from")
+        
+        resp = requests.get(url, params=params, timeout=10)
+        logger.debug(f"[Graph API] Fetch Username Status: {resp.status_code}")
+        logger.debug(f"[Graph API] Fetch Username Response: {resp.text}")
+        
+        if resp.status_code == 200:
+            data = resp.json()
+            return data.get("from", {}).get("username")
+        else:
+            logger.warning("Failed to fetch IG username for mid=%s: status=%d body=%s", mid, resp.status_code, resp.text)
+    except Exception as exc:
+        logger.exception("Error fetching IG username: %s", exc)
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -211,14 +260,22 @@ async def _send_dm(recipient_id: str, text: str) -> bool:
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
+            payload = {
+                "recipient": {"id": recipient_id},
+                "message": {"text": text},
+            }
+            logger.debug(f"[Graph API] Sending DM to recipient={recipient_id}")
+            logger.debug(f"[Graph API] DM Payload: {payload}")
+            
             resp = await client.post(
                 url,
                 headers={"Authorization": f"Bearer {settings.IG_ACCESS_TOKEN}"},
-                json={
-                    "recipient": {"id": recipient_id},
-                    "message": {"text": text},
-                },
+                json=payload,
             )
+            
+            logger.debug(f"[Graph API] DM Response Status: {resp.status_code}")
+            logger.debug(f"[Graph API] DM Response Body: {resp.text}")
+            
             if resp.status_code == 200:
                 logger.info("DM sent to %s (status=%d)", recipient_id, resp.status_code)
                 return True
@@ -247,14 +304,14 @@ async def send_fallback_dm(recipient_id: str) -> None:
 # Main handler — routes through LangGraph agent
 # ---------------------------------------------------------------------------
 
-async def handle_instagram_dm(igsid: str, message_text: str) -> None:
+async def handle_instagram_dm(igsid: str, message_text: str, mid: str | None = None) -> None:
     """
     Full pipeline: identity resolution → agent graph → outbound DM.
     """
     settings = get_settings()
 
     # 1. Resolve customer identity
-    customer = _resolve_customer(igsid)
+    customer = _resolve_customer(igsid, mid)
     session_id = f"ig_{igsid}"
 
     if customer is None:
